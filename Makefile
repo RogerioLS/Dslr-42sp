@@ -20,7 +20,7 @@ MAGENTA := \033[35m
 BLUE    := \033[34m
 WHITE   := \033[97m
 
-.PHONY: help install describe histogram scatter pairplot train predict evaluate test norm compile audit pre-commit clean
+.PHONY: help install describe histogram scatter pairplot train predict evaluate test norm compile audit summary pre-commit clean
 
 help:
 	@printf "$(CYAN)┌──────────────────────────────────────────────────────────────────────────────┐\n$(RESET)"
@@ -39,6 +39,7 @@ help:
 	@printf "$(CYAN)│$(RESET)  $(BOLD)$(GREEN)make norm$(RESET)       $(DIM)─$(RESET) Run 42 Norm & Anti-Cheating Auditor                         $(CYAN)│\n$(RESET)"
 	@printf "$(CYAN)│$(RESET)  $(BOLD)$(GREEN)make compile$(RESET)    $(DIM)─$(RESET) Compile Python 3.10 syntax across all project files          $(CYAN)│\n$(RESET)"
 	@printf "$(CYAN)│$(RESET)  $(BOLD)$(GREEN)make audit$(RESET)      $(DIM)─$(RESET) Full audit: compile + norm + unit tests                   $(CYAN)│\n$(RESET)"
+	@printf "$(CYAN)│$(RESET)  $(BOLD)$(GREEN)make summary$(RESET)    $(DIM)─$(RESET) Generate local audit summary report (summary.md)           $(CYAN)│\n$(RESET)"
 	@printf "$(CYAN)│$(RESET)  $(BOLD)$(GREEN)make pre-commit$(RESET) $(DIM)─$(RESET) Install pre-commit tool and set up git hooks              $(CYAN)│\n$(RESET)"
 	@printf "$(CYAN)│$(RESET)  $(BOLD)$(GREEN)make clean$(RESET)      $(DIM)─$(RESET) Remove temporary cache and prediction files                $(CYAN)│\n$(RESET)"
 	@printf "$(CYAN)├──────────────────────────────────────────────────────────────────────────────┤\n$(RESET)"
@@ -95,6 +96,11 @@ audit: compile norm test
 	@printf "\n$(BOLD)$(GREEN)======================================================================$(RESET)\n"
 	@printf "$(BOLD)$(GREEN)   ✅ FULL AUDIT COMPLETE: Code is compliant & ready for evaluation!   $(RESET)\n"
 	@printf "$(BOLD)$(GREEN)======================================================================$(RESET)\n\n"
+
+summary:
+	@printf "$(BOLD)$(BLUE)📊 [SUMMARY] Generating local audit report (summary.md)...$(RESET)\n"
+	@$(PYTHON) scripts/generate_summary.py
+
 
 pre-commit:
 	@if command -v pre-commit > /dev/null 2>&1; then \

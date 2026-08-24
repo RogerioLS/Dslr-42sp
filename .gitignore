@@ -40,6 +40,10 @@ coverage.xml
 ### Jupyter Notebooks ###
 .ipynb_checkpoints
 
+# Audit reports and artifacts
+summary.md
+artifacts/
+
 ### pyenv & Linters ###
 .python-version
 .ruff_cache/
