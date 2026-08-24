@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# ==============================================================================
+#                      42 DSLR - PRE-COMMIT HOOK
+# ==============================================================================
+
+set -e
+
+echo "🔍 [HOOK] Running 42 Norm & Clean Code checks before commit..."
+
+if command -v python3 > /dev/null 2>&1; then
+    python3 scripts/norm_check.py
+fi
+
+if command -v pre-commit > /dev/null 2>&1; then
+    pre-commit run
+fi
+
+echo "✅ Pre-commit hook passed."
