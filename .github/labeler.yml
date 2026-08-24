@@ -1,0 +1,58 @@
+"area: stats":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "describe.py"
+          - "src/analytics/**"
+
+"area: visualization":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "histogram.py"
+          - "scatter_plot.py"
+          - "pair_plot.py"
+          - "src/visualization/**"
+
+"area: model":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "logreg_train.py"
+          - "logreg_predict.py"
+          - "src/model/**"
+
+"area: preprocessing":
+  - changed-files:
+      - any-glob-to-any-file: "src/preprocessing/**"
+
+"area: defense":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "docs/PEER_EVALUATION_GUIDE.md"
+          - "docs/DATA_VISUALIZATION.md"
+
+"type: test":
+  - changed-files:
+      - any-glob-to-any-file: "tests/**"
+
+"type: docs":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "README.md"
+          - "**/README.md"
+          - "docs/**"
+          - "SECURITY.md"
+          - "CONTRIBUTING.md"
+          - "HANDOFF_PROGRESSO.md"
+          - ".agents/**"
+
+"type: ci":
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/**"
+          - "Makefile"
+          - "scripts/**"
+          - "pyproject.toml"
+          - ".pre-commit-config.yaml"
+
+"type: datasets":
+  - changed-files:
+      - any-glob-to-any-file: "datasets/**"
