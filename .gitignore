@@ -1,23 +1,59 @@
-### AL ###
-#Template for AL projects for Dynamics 365 Business Central
-#launch.json folder
+### Python & Bytecode ###
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+
+### Virtual Environments ###
+.venv/
+venv/
+env/
+ENV/
+
+### Distribution & Packaging ###
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+### Jupyter Notebooks ###
+.ipynb_checkpoints
+
+### pyenv & Linters ###
+.python-version
+.ruff_cache/
+.mypy_cache/
+
+### Editors & IDEs ###
 .vscode/
-#Cache folder
-.alcache/
-#Symbols folder
-.alpackages/
-#Snapshots folder
-.snapshots/
-#Testing Output folder
-.output/
-#Extension App-file
-*.app
-#Rapid Application Development File
-rad.json
-#Translation Base-file
-*.g.xlf
-#License-files
-*.bclicense
-*.flf
-#Test results file
-TestResults.xml
+.idea/
+*.swp
+*.swo
+*~
+
+### OS Metadata ###
+.DS_Store
+Thumbs.db
+
+HANDOFF_PROGRESSO.md
