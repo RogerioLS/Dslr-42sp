@@ -1,0 +1,44 @@
+name: 🐛 Reporte de Bug / Erro de Execução
+description: Relatar um erro ou comportamento inesperado no código ou nos testes do DSLR.
+title: "[BUG]: "
+labels: ["type: bug", "priority: medium"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por relatar o problema! Forneça os detalhes para reprodução no DSLR.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 📝 Descrição do Bug
+      placeholder: Ao executar describe.py ou train.py, obtive o erro...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 🔄 Passos para Reproduzir
+      placeholder: |
+        1. make describe
+        2. make train
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 📜 Logs de Erro / Traceback
+      render: shell
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: ⚠️ Severidade / Impacto
+      options:
+        - "🔴 Bloqueante (Impede entrega ou acurácia < 98%)"
+        - "🟡 Médio (Funcionalidade de visualização com falha)"
+        - "🟢 Baixo (Linter ou formatação)"
+    validations:
+      required: true

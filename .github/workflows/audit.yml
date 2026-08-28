@@ -68,3 +68,7 @@ jobs:
           path: |
             summary.md
             artifacts/
+
+      - name: Enforce Strict Quality Gate (Fail if Audit Failed)
+        run: |
+          python -c "import json; m = json.load(open('artifacts/audit_summary.json')); exit(0 if m.get('overall_passed') else 1)"

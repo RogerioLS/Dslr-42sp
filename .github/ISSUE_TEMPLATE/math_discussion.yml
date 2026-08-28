@@ -1,0 +1,24 @@
+name: 📐 Discussão Matemática & Algoritmo
+description: Debater uma fórmula, função de perda ou gradiente logístico no DSLR.
+title: "[MATH]: "
+labels: ["type: math-heavy", "priority: medium"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Espaço dedicado ao aprofundamento teórico, derivação de fórmulas de Regressão Logística e One-vs-Rest.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: 📚 Equações ou Conceito
+      placeholder: Dúvida sobre o cálculo do gradiente da função de custo logística (Binary Cross-Entropy)...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposals
+    attributes:
+      label: 💡 Propostas da Dupla
+    validations:
+      required: true

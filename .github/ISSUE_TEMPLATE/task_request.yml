@@ -1,0 +1,37 @@
+name: 🎯 Nova Task / Proposta de Melhoria
+description: Propor uma nova tarefa ou etapa no DSLR.
+title: "[TASK]: "
+labels: ["type: implementation", "priority: medium"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Defina a nova tarefa com objetivo didático e critérios de aceite.
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: 🎯 Objetivo Didático
+      placeholder: Implementar a classe X no src/...
+    validations:
+      required: true
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: 📝 Checklist de Implementação
+      placeholder: |
+        - [ ] Criar classe em src/...
+        - [ ] Testes unitários em tests/unit/...
+    validations:
+      required: true
+
+  - type: textarea
+    id: dod
+    attributes:
+      label: 🧪 Critérios de Aceite (Definition of Done)
+      placeholder: |
+        - make audit passa com 100% de sucesso.
+        - make norm valida ausência de trapaça.
+    validations:
+      required: true
