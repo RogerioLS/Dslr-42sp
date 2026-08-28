@@ -29,30 +29,70 @@ We use an interactive **Makefile Command Center** to standardize all development
 
 ---
 
-## 🌿 Git Branching Strategy
+## 🏷️ Branch, Commit & Task Naming Governance (Strict Enforcement)
 
-- `main`: Protected branch containing stable, fully audited code.
-- `feat/<task-id>-<description>`: Feature branches for specific tasks (e.g. `feat/dslr-01-data-pipeline`).
-- `fix/<issue-id>-<description>`: Bug fixes and refactoring.
-- `docs/<topic>`: Documentation and mathematical derivations.
+To ensure full traceability between the **GitHub Kanban**, **Pull Requests**, and **Git History**, all branches and commit messages are strictly validated by automated hooks and GitHub Actions.
+
+### 🌿 1. Branch Naming Format:
+```text
+<type>/<task-id>-<short-description-in-kebab-case>
+```
+- **Valid Examples**:
+  - `feat/dslr-01-data-pipeline`
+  - `feat/dslr-02-stats-math`
+  - `fix/dslr-03-percentile-interpolation`
+  - `docs/dslr-13-peer-defense-guide`
+  - `chore/infra-makefile-update`
+- **Rejection Behavior**: If a branch name is invalid (e.g. `my-branch`, `test`, `dev`), the **GitHub Action (`branch_lint.yml`) will fail and block the Pull Request**.
 
 ---
 
-## 🔒 Commit Conventions (Conventional Commits)
-
-Commit messages must follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
-
+### 📝 2. Commit Message Format:
 ```text
-<type>(<scope>): <short description in imperative mood>
+<type>(<scope>): [<TASK-ID>] <short description in lowercase>
 ```
+- **Valid Task Examples**:
+  - `feat(analytics): [DSLR-01] load csv and handle missing values`
+  - `feat(math): [DSLR-02] implement count and mean from scratch`
+  - `feat(stats): [DSLR-03] calculate 25th 50th 75th percentiles`
+  - `docs(theory): [DSLR-09] derive binary cross-entropy loss function`
+- **Valid Non-Task / Infrastructure Examples**:
+  - `chore(build): [INFRA] configure pre-commit hooks and make check`
+  - `docs(meta): [DOCS] update contributing guidelines and security policy`
+  - `fix(types): [HOTFIX] resolve lint typing issue in script loader`
 
-### Types:
-- `feat`: New feature, algorithm, or deliverable script (`describe.py`, `histogram.py`, `train.py`).
-- `fix`: Bug fix or logic correction.
-- `docs`: Documentation, mathematical proofs, or docstring additions.
-- `test`: Adding or modifying unit / integration tests.
-- `chore`: Tooling, linters, pre-commit, or CI/CD configuration.
-- `refactor`: Code restructuring without changing external behavior.
+### 📋 Allowed Reserved Tags (for non-subject changes):
+`[INFRA]`, `[CHORE]`, `[DOCS]`, `[FIX]`, `[HOTFIX]`, `[SECURITY]`, `[GLOBAL]`, `[CONFIG]`, `[DEPS]`
+
+---
+
+### 🔄 3. Dynamic Task Lifecycle & Auto-Sync:
+1. **Local Dynamic Detection**: The `.githooks/commit-msg` dynamically checks `.github/issues/`. When a new file `dslr-14-bonus.md` is added, the `[DSLR-14]` tag is **immediately valid** without editing any configuration!
+2. **GitHub Web UI Sync**: If you or your peer open a new Issue on GitHub Web, simply run:
+   ```bash
+   make sync-tasks
+   ```
+   This downloads the new issue into `.github/issues/` so local git hooks recognize it offline.
+
+---
+
+### 🚨 4. Troubleshooting: What if my Commit or PR is Rejected?
+
+- **If your commit was rejected by Git Hook**:
+  ```text
+  ⛔ COMMIT REJEITADO: TASK NÃO ENCONTRADA NO PROJETO
+  ```
+  1. Check if the task ID matches an existing file in `.github/issues/` (e.g. `[DSLR-01]` to `[DSLR-13]`);
+  2. If it is a new task, create `.github/issues/dslr-XX-title.md`;
+  3. If it is a general improvement without a subject task, use `[INFRA]` or `[CHORE]`.
+
+- **If your PR was rejected by Branch Lint Action**:
+  Rename your local branch and update the remote:
+  ```bash
+  git branch -m <old-name> feat/<task-id>-<description>
+  git push origin -u feat/<task-id>-<description>
+  git push origin --delete <old-name>
+  ```
 
 ---
 

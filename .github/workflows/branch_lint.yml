@@ -1,0 +1,57 @@
+name: 🌿 Branch Name & Task Format Quality Gate
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+jobs:
+  branch_lint:
+    name: Validate Branch & Task Format
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Validate Branch Name
+        id: branch_check
+        run: |
+          BRANCH_NAME="${{ github.head_ref }}"
+          echo "🔍 Checking branch name: $BRANCH_NAME"
+
+          # Allowed branch regex: <type>/<task-id-or-scope>-<desc>
+          # Examples:
+          #   feat/dslr-01-data-pipeline
+          #   fix/dslr-03-percentile-edge-case
+          #   docs/dslr-13-peer-defense-guide
+          #   chore/infra-update-linters
+          #   dependabot/*
+          REGEX="^(feat|fix|docs|test|refactor|chore|ci|build|perf)/(dslr-[0-9]{2}|infra|hotfix|[a-z0-9-]+)(-[a-z0-9-]+)*$|^dependabot/.*$"
+
+          if [[ ! "$BRANCH_NAME" =~ $REGEX ]]; then
+            echo "::error title=Invalid Branch Name::Branch name '$BRANCH_NAME' violates 42 DSLR naming convention."
+            echo ""
+            echo "========================================================================"
+            echo " ⛔ REPROVADO: NOME DA BRANCH FORA DO PADRÃO INSTITUCIONAL"
+            echo "========================================================================"
+            echo " ❌ Branch atual: '$BRANCH_NAME'"
+            echo ""
+            echo " 📐 Formato Obrigatório:"
+            echo "    <type>/<task-id>-<descrição-em-kebab-case>"
+            echo ""
+            echo " 📌 Exemplos Válidos:"
+            echo "    feat/dslr-01-data-pipeline"
+            echo "    feat/dslr-02-stats-math"
+            echo "    fix/dslr-03-percentile-interpolation"
+            echo "    docs/dslr-13-peer-defense"
+            echo "    chore/infra-makefile-update"
+            echo ""
+            echo " 🔧 Como corrigir localmente:"
+            echo "    git branch -m $BRANCH_NAME feat/<task-id>-<descrição>"
+            echo "    git push origin -u feat/<task-id>-<descrição>"
+            echo "    git push origin --delete $BRANCH_NAME"
+            echo "========================================================================"
+            exit 1
+          fi
+
+          echo "✅ Branch name '$BRANCH_NAME' is valid and complies with 42 governance."
