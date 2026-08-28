@@ -1,4 +1,4 @@
-# Security Policy
+# Security Policy — 42 DSLR
 
 ## Overview
 
@@ -11,41 +11,43 @@ This repository contains the Machine Learning project for the **42 Specializatio
 Only the active Python version defined by the 42 curriculum is officially supported for security updates and exercise validation:
 
 | Version | Supported |
-| ------- | --------- |
+| :--- | :---: |
 | Python 3.10.x | :white_check_mark: Yes |
 | Python < 3.10 | :x: No |
 
 ---
 
-## Security Best Practices in this Repository
+## 🛡️ Security Best Practices & Automated Scanning
 
-When contributing or reviewing code in this repository, ensure the following security standards are met:
+Security and code integrity are enforced continuously through our automated pipeline and **Makefile** tooling:
 
-1. **No Hardcoded Credentials or Secrets:**
-   - Never commit API keys, personal access tokens, passwords, or personal credentials.
-   - All secret detection is enforced pre-commit via `detect-secrets`.
+1. **Automated Secret Detection (`make check`)**:
+   - `detect-secrets` runs locally via pre-commit hooks before every commit.
+   - Prevents accidental exposure of API keys, tokens, or private credentials.
 
-2. **Safe Input Validation & Robust Error Handling:**
-   - Validate and sanitize input data (CLI arguments, CSV file paths, column names).
-   - Prevent arbitrary command execution or unsafe file path traversals.
-   - Handle exceptions gracefully without leaking sensitive stack traces or environment details.
+2. **Static Security Analysis (`make audit`)**:
+   - Bandit AST security scanning detects common Python vulnerabilities, unsafe des-serialization, and shell injection risks.
 
-3. **Dependency Integrity:**
-   - Keep external dependencies (NumPy, Pandas, Matplotlib, Seaborn, Scikit-Learn) updated to versions free of known CVEs.
-   - Automatic scanning and dependency updates are handled by Dependabot.
+3. **Safe Input Validation & Robust Error Handling**:
+   - CLI scripts sanitize dataset paths and input arguments.
+   - Prevent arbitrary command execution and directory traversal attacks (`../`).
+   - Gracefully handle exceptions without leaking raw stack traces or internal environment variables.
 
-4. **Environment Isolation:**
+4. **Dependency Vulnerability Management**:
+   - Dependabot regularly scans and submits automated PRs for Python dependencies (`pip`) and GitHub Actions.
+
+5. **Environment Isolation**:
    - Always run the project inside an isolated virtual environment (`venv` or `conda`).
-   - Avoid running analytical scripts with root/administrator privileges.
+   - Avoid executing analytical scripts with elevated (root/sudo) privileges.
 
 ---
 
-## Reporting a Vulnerability
+## 🚨 Reporting a Vulnerability
 
-If you discover a security vulnerability or accidental exposure of sensitive data within this repository, please report it responsibly:
+If you discover a security vulnerability or accidental credential exposure in this repository, please report it responsibly:
 
 1. **Do NOT open a public GitHub issue.**
 2. Submit a private security advisory via GitHub or contact the repository owner ([@RogerioLS](https://github.com/RogerioLS)).
-3. Include detailed steps to reproduce the issue, along with any relevant code snippets or logs.
+3. Include detailed steps to reproduce the issue, along with relevant logs or code snippets.
 
 We appreciate your effort in keeping this learning repository secure and reliable.
