@@ -44,7 +44,7 @@ def _check_syntax() -> tuple[str, str, int]:
 
 def _check_unit_tests() -> tuple[str, str, int, int]:
     """Runs existing unit tests and parses pass/total counts."""
-    test_files = list((BASE_DIR / "tests").glob("test_*.py"))
+    test_files = list((BASE_DIR / "tests").rglob("test_*.py"))
     if not test_files:
         return "✅ PASSED", "Ran 0 tests in 0.000s\n\nOK (Scaffolding stage)", 0, 0
 
