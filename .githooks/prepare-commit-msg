@@ -21,10 +21,10 @@ if echo "$FIRST_LINE" | grep -qE '^(✨|🐛|📝|🔧|♻️|✅|💄|🚀|🔥
 fi
 
 # Extract all Conventional Commit type prefixes in the first line
-mapfile -t TYPE_LIST < <(echo "$FIRST_LINE" | grep -oE '([a-z]+)(\([^)]+\))?:' | sed -E 's/^([a-z]+).*/\1/' | tr '[:upper:]' '[:lower:]' || true)
+TYPE_LIST=$(echo "$FIRST_LINE" | grep -oE '([a-z]+)(\([^)]+\))?:' | sed -E 's/^([a-z]+).*/\1/' | tr '[:upper:]' '[:lower:]' || true)
 
 EMOJIS=""
-for t in "${TYPE_LIST[@]}"; do
+for t in $TYPE_LIST; do
   case "$t" in
     feat) e="✨";;
     fix) e="🐛";;
@@ -58,7 +58,10 @@ if [[ -z "$EMOJIS" ]]; then
   esac
 fi
 
-# Prepend emojis followed by a space to the first line
-sed -i "1s/^/${EMOJIS} /" "$COMMIT_MSG_FILE"
+# Prepend emojis followed by a space to the first line (cross-platform macOS/Linux sed)
+TEMP_FILE=$(mktemp)
+echo "${EMOJIS} ${FIRST_LINE}" > "$TEMP_FILE"
+tail -n +2 "$COMMIT_MSG_FILE" >> "$TEMP_FILE" 2>/dev/null || true
+mv "$TEMP_FILE" "$COMMIT_MSG_FILE"
 
 exit 0
