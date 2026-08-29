@@ -2,6 +2,7 @@
 
 import unittest
 from pathlib import Path
+
 import pandas as pd
 
 from src.analytics.loader import (
@@ -63,6 +64,12 @@ class TestDataLoader(unittest.TestCase):
         """Verifies that extract_valid_feature_values raises KeyError for invalid column."""
         with self.assertRaises(KeyError):
             extract_valid_feature_values(self.sample_df, "InvalidCourse")
+
+    def test_hogwarts_courses_constant(self) -> None:
+        """Verifies that HOGWARTS_COURSES contains all 13 expected courses."""
+        self.assertEqual(len(HOGWARTS_COURSES), 13)
+        self.assertIn("Arithmancy", HOGWARTS_COURSES)
+        self.assertIn("Flying", HOGWARTS_COURSES)
 
 
 if __name__ == "__main__":
