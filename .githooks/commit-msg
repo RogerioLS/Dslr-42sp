@@ -11,12 +11,13 @@ if [[ "$COMMIT_MSG" =~ ^Merge ]] || [[ "$COMMIT_MSG" =~ ^Revert ]] || [[ "$COMMI
     exit 0
 fi
 
-# Regex: <type>(<scope>): [<TAG>] <description> or with optional emoji prefix
+# Regex: <type>(<scope>): [<TASK-ID>:#<ISSUE_NUM>] <description> or with optional emoji prefix
 # Examples:
+#   feat(analytics): [DSLR-01:#1] load dataset and clean nans
 #   feat(analytics): [DSLR-01] load dataset and clean nans
-#   📝 docs(theory): [DSLR-02] derive mathematical formulas
+#   📝 docs(theory): [DSLR-02:#2] derive mathematical formulas
 #   🔧 chore(build): [INFRA] update pre-commit hooks
-COMMIT_REGEX="^([[:alnum:][:punct:][:space:]]* )?(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-zA-Z0-9_\/-]+\))?:[[:space:]]+(\[([a-zA-Z0-9_-]+)\])?[[:space:]]+(.+)$"
+COMMIT_REGEX="^([[:alnum:][:punct:][:space:]]* )?(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-zA-Z0-9_\/-]+\))?:[[:space:]]+(\[([a-zA-Z0-9_:#-]+)\])?[[:space:]]+(.+)$"
 
 if ! [[ "$COMMIT_MSG" =~ $COMMIT_REGEX ]]; then
     echo ""
@@ -26,12 +27,13 @@ if ! [[ "$COMMIT_MSG" =~ $COMMIT_REGEX ]]; then
     echo " ❌ Sua mensagem: \"$COMMIT_MSG\""
     echo ""
     echo " 📐 Formato Obrigatório:"
-    echo "    <type>(<scope>): [<TASK-ID>] <descrição da alteração>"
+    echo "    <type>(<scope>): [<TASK-ID>:#<ISSUE_NUM>] <descrição da alteração>"
+    echo "    ou: <type>(<scope>): [<TASK-ID>] <descrição da alteração>"
     echo ""
     echo " 📌 Exemplos Válidos:"
-    echo "    feat(analytics): [DSLR-01] load csv and handle missing values"
-    echo "    feat(math): [DSLR-02] implement count and mean from scratch"
-    echo "    docs(theory): [DSLR-09] derive binary cross-entropy loss function"
+    echo "    feat(analytics): [DSLR-01:#1] load csv and handle missing values"
+    echo "    feat(math): [DSLR-02:#2] implement count and mean from scratch"
+    echo "    docs(theory): [DSLR-09:#9] derive binary cross-entropy loss function"
     echo "    chore(build): [INFRA] configure pre-commit and ast norm checker"
     echo ""
     echo " 💡 Tipos Válidos:"
@@ -40,8 +42,9 @@ if ! [[ "$COMMIT_MSG" =~ $COMMIT_REGEX ]]; then
     exit 1
 fi
 
-# Extract the Task Tag inside brackets [TAG]
-TASK_TAG="${BASH_REMATCH[5]}"
+# Extract the Raw Task Tag inside brackets [TAG] (e.g. DSLR-01:#1 or DSLR-01)
+RAW_TASK_TAG="${BASH_REMATCH[5]}"
+TASK_TAG=$(echo "$RAW_TASK_TAG" | cut -d':' -f1)
 
 # Reserved global tags that don't need a matching file in .github/issues/
 RESERVED_TAGS=("INFRA" "CHORE" "DOCS" "FIX" "HOTFIX" "GLOBAL" "CONFIG" "SECURITY" "COMMUNITY" "DEPS")

@@ -1,6 +1,8 @@
 ## Description
 Briefly explain the changes made in this pull request.
 
+Closes #
+
 ## Checklist
 - [ ] Code follows Python 3.10 standards and max 100 chars/line.
 - [ ] All functions/methods have complete docstrings.

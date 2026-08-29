@@ -49,13 +49,13 @@ To ensure full traceability between the **GitHub Kanban**, **Pull Requests**, an
 
 ### 📝 2. Commit Message Format:
 ```text
-<type>(<scope>): [<TASK-ID>] <short description in lowercase>
+<type>(<scope>): [<TASK-ID>:#<ISSUE_NUM>] <short description in lowercase>
 ```
 - **Valid Task Examples**:
-  - `feat(analytics): [DSLR-01] load csv and handle missing values`
-  - `feat(math): [DSLR-02] implement count and mean from scratch`
-  - `feat(stats): [DSLR-03] calculate 25th 50th 75th percentiles`
-  - `docs(theory): [DSLR-09] derive binary cross-entropy loss function`
+  - `feat(analytics): [DSLR-01:#1] load csv and handle missing values`
+  - `feat(math): [DSLR-02:#2] implement count and mean from scratch`
+  - `feat(stats): [DSLR-03:#3] calculate 25th 50th 75th percentiles`
+  - `docs(theory): [DSLR-09:#9] derive binary cross-entropy loss function`
 - **Valid Non-Task / Infrastructure Examples**:
   - `chore(build): [INFRA] configure pre-commit hooks and make check`
   - `docs(meta): [DOCS] update contributing guidelines and security policy`
