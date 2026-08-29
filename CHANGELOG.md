@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Data pipeline module (`src/analytics/loader.py`) for CSV ingestion and NaN handling `[DSLR-01]`.
+- Unit test suite for data loading and feature extraction (`tests/unit/test_loader.py`).
 - Modular packages scaffolding (`src/analytics/`, `src/preprocessing/`, `src/model/`, `src/visualization/`).
 - Automated AST Norm & Anti-Cheating checker (`scripts/norm_check.py`).
 - 98% accuracy threshold evaluator (`scripts/evaluate_accuracy.py`).
