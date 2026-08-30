@@ -14,10 +14,10 @@ fi
 # Regex: <type>(<scope>): [<TASK-ID>:#<ISSUE_NUM>] <description> or with optional emoji prefix
 # Examples:
 #   feat(analytics): [DSLR-01:#1] load dataset and clean nans
-#   feat(analytics): [DSLR-01] load dataset and clean nans
+#   ✨ feat(analytics): [DSLR-01:#1] load dataset and clean nans
 #   📝 docs(theory): [DSLR-02:#2] derive mathematical formulas
 #   🔧 chore(build): [INFRA] update pre-commit hooks
-COMMIT_REGEX="^([[:alnum:][:punct:][:space:]]* )?(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-zA-Z0-9_\/-]+\))?:[[:space:]]+(\[([a-zA-Z0-9_:#-]+)\])?[[:space:]]+(.+)$"
+COMMIT_REGEX="^([^:]* )?(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-zA-Z0-9_\/-]+\))?:[[:space:]]+(\[([a-zA-Z0-9_:#-]+)\])?[[:space:]]+(.+)$"
 
 if ! [[ "$COMMIT_MSG" =~ $COMMIT_REGEX ]]; then
     echo ""

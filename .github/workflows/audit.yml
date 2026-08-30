@@ -9,6 +9,7 @@ on:
 
 permissions:
   pull-requests: write
+  issues: write
   contents: read
 
 jobs:
@@ -59,6 +60,14 @@ jobs:
           GITHUB_EVENT_PATH: ${{ github.event_path }}
         run: |
           python scripts/update_pr_checklist.py
+
+      - name: Auto-Check Off & Close Linked Issue Upon Audit Pass
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+        run: |
+          python scripts/update_issue_checklist.py
 
       - name: Upload Audit Artifacts
         if: always()
