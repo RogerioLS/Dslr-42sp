@@ -45,9 +45,7 @@ def _extract_issue_number(event_data: dict) -> Optional[int]:
     return None
 
 
-def _github_api_request(
-    url: str, method: str, token: str, data: Optional[dict] = None
-) -> dict:
+def _github_api_request(url: str, method: str, token: str, data: Optional[dict] = None) -> dict:
     """Executes an HTTP request against GitHub REST API and returns JSON response."""
     headers = {
         "Authorization": f"token {token}",
@@ -55,18 +53,14 @@ def _github_api_request(
         "User-Agent": "42-DSLR-Issue-Automator",
     }
     encoded_data = json.dumps(data).encode("utf-8") if data else None
-    req = urllib.request.Request(
-        url, data=encoded_data, headers=headers, method=method
-    )
+    req = urllib.request.Request(url, data=encoded_data, headers=headers, method=method)
 
     with urllib.request.urlopen(req) as resp:
         content = resp.read().decode("utf-8")
         return json.loads(content) if content else {}
 
 
-def _update_issue_checkboxes(
-    repo: str, issue_number: int, token: str, metrics: dict
-) -> None:
+def _update_issue_checkboxes(repo: str, issue_number: int, token: str, metrics: dict) -> None:
     """Checks off issue checkboxes, posts audit certificate, and closes the issue."""
     issue_url = f"https://api.github.com/repos/{repo}/issues/{issue_number}"
     comments_url = f"{issue_url}/comments"
@@ -78,7 +72,6 @@ def _update_issue_checkboxes(
         return
 
     body = issue_data.get("body") or ""
-    current_state = issue_data.get("state")
 
     # Convert all unchecked boxes to checked
     new_body = body.replace("- [ ]", "- [x]")
