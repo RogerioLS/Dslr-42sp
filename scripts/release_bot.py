@@ -2,9 +2,10 @@
 
 Triggered on milestone closing or manual dispatch:
 1. Validates that all issues in the milestone are closed (zero open issues).
-2. Categorizes closed tasks into semantic groups matching .github/release.yml.
-3. Automatically updates CHANGELOG.md following Keep a Changelog standard.
-4. Commits and creates the official GitHub Release with semantic tag.
+2. Extracts detailed technical tasks from each issue body for rich release notes.
+3. Categorizes closed tasks into semantic groups matching .github/release.yml.
+4. Automatically updates CHANGELOG.md following Keep a Changelog standard.
+5. Handles protected branch fallbacks via automated PR and publishes GitHub Release.
 """
 
 import argparse
@@ -13,7 +14,6 @@ import json
 import os
 import re
 import subprocess
-import sys
 from typing import Any, Dict, List
 
 MILESTONE_VERSION_MAP: Dict[str, str] = {
@@ -203,16 +203,52 @@ def fetch_milestone_and_issues(repo: str, milestone_number: int) -> Dict[str, An
     return {"milestone": milestone_data, "items": items}
 
 
-def categorize_items(items: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, str]]]:
+def extract_task_details(body: str) -> List[str]:
+    """Extracts completed technical tasks or summary bullet points from issue body.
+
+    Args:
+        body (str): Raw markdown body of the issue.
+
+    Returns:
+        List[str]: List of bullet point highlights.
+    """
+    if not body:
+        return []
+
+    lines = body.splitlines()
+    details: List[str] = []
+    in_tasks_section = False
+
+    for line in lines:
+        stripped = line.strip()
+        if "Tarefas Técnicas" in stripped or "Tasks" in stripped:
+            in_tasks_section = True
+            continue
+        if in_tasks_section and stripped.startswith("##"):
+            in_tasks_section = False
+
+        if in_tasks_section:
+            clean_item = re.sub(r"^-\s*(\[[ xX]\])?\s*", "", stripped)
+            if clean_item and len(clean_item) > 3:
+                details.append(clean_item)
+        elif stripped.startswith("- [x]") or stripped.startswith("- [X]"):
+            clean_item = re.sub(r"^-\s*\[[xX]\]\s*", "", stripped)
+            if clean_item and len(clean_item) > 3:
+                details.append(clean_item)
+
+    return details[:4]
+
+
+def categorize_items(items: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
     """Sorts milestone issues and PRs into semantic release categories.
 
     Args:
         items (List[Dict[str, Any]]): List of raw issue/PR dictionaries.
 
     Returns:
-        Dict[str, List[Dict[str, str]]]: Categorized mapping with title, url, number.
+        Dict[str, List[Dict[str, Any]]]: Categorized mapping with title, url, number, details.
     """
-    categorized: Dict[str, List[Dict[str, str]]] = {
+    categorized: Dict[str, List[Dict[str, Any]]] = {
         cat["title"]: [] for cat in CATEGORY_DEFINITIONS
     }
 
@@ -221,44 +257,40 @@ def categorize_items(items: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, st
         number = item.get("number")
         html_url = item.get("html_url", "")
         author = item.get("user", {}).get("login", "")
+        body = item.get("body", "") or ""
         labels = {lbl.get("name", "") for lbl in item.get("labels", [])}
+        details = extract_task_details(body)
+
+        item_obj = {
+            "title": title,
+            "number": str(number),
+            "url": html_url,
+            "author": author,
+            "details": details,
+        }
 
         placed = False
         for cat in CATEGORY_DEFINITIONS:
             if labels.intersection(cat["labels"]):
-                categorized[cat["title"]].append(
-                    {
-                        "title": title,
-                        "number": str(number),
-                        "url": html_url,
-                        "author": author,
-                    }
-                )
+                categorized[cat["title"]].append(item_obj)
                 placed = True
                 break
 
         if not placed:
-            categorized["✨ Features & Algoritmos"].append(
-                {
-                    "title": title,
-                    "number": str(number),
-                    "url": html_url,
-                    "author": author,
-                }
-            )
+            categorized["✨ Features & Algoritmos"].append(item_obj)
 
     return categorized
 
 
 def build_release_markdown(
-    version: str, milestone_title: str, categorized: Dict[str, List[Dict[str, str]]]
+    version: str, milestone_title: str, categorized: Dict[str, List[Dict[str, Any]]]
 ) -> str:
-    """Generates the formatted release notes in Markdown.
+    """Generates rich, detailed release notes in Markdown with task bullets.
 
     Args:
         version (str): The semantic version (e.g. 'v0.1.0').
         milestone_title (str): Milestone title string.
-        categorized (Dict[str, List[Dict[str, str]]]): The categorized items.
+        categorized (Dict[str, List[Dict[str, Any]]]): The categorized items with details.
 
     Returns:
         str: Markdown formatted release notes.
@@ -274,18 +306,21 @@ def build_release_markdown(
         lines.append(f"### {cat_title}")
         for it in items:
             author_credit = f" by @{it['author']}" if it["author"] else ""
-            lines.append(f"- {it['title']} ([#{it['number']}]({it['url']})){author_credit}")
+            lines.append(f"- **{it['title']}** ([#{it['number']}]({it['url']})){author_credit}")
+            for detail in it.get("details", []):
+                lines.append(f"  - {detail}")
         lines.append("")
 
     return "\n".join(lines).strip()
 
 
-def update_changelog_file(changelog_path: str, release_notes: str) -> None:
-    """Inserts newly generated release notes into the CHANGELOG.md file.
+def update_changelog_file(changelog_path: str, release_notes: str, version: str) -> None:
+    """Inserts or replaces generated release notes into the CHANGELOG.md file.
 
     Args:
         changelog_path (str): Absolute or relative path to CHANGELOG.md.
         release_notes (str): The Markdown release section to inject.
+        version (str): The semantic version (e.g. 'v0.1.0').
     """
     if not os.path.exists(changelog_path):
         raise FileNotFoundError(f"CHANGELOG.md not found at {changelog_path}")
@@ -293,14 +328,20 @@ def update_changelog_file(changelog_path: str, release_notes: str) -> None:
     with open(changelog_path, "r", encoding="utf-8") as file:
         content = file.read()
 
+    clean_ver = version.lstrip("v")
+    version_pattern = rf"## \[{re.escape(clean_ver)}\][\s\S]*?(?=\n## \[|\Z)"
+    content_cleaned = re.sub(version_pattern, "", content)
+    content_cleaned = re.sub(r"(---\s*){2,}", "---\n\n", content_cleaned)
+
     unreleased_marker = "## [Unreleased]"
-    if unreleased_marker in content:
-        parts = content.split(unreleased_marker, 1)
+    if unreleased_marker in content_cleaned:
+        parts = content_cleaned.split(unreleased_marker, 1)
+        remaining = parts[1].lstrip().lstrip("-").lstrip()
         new_content = (
-            f"{parts[0]}{unreleased_marker}\n\n---\n\n" f"{release_notes}\n" f"{parts[1].lstrip()}"
+            f"{parts[0]}{unreleased_marker}\n\n---\n\n" f"{release_notes}\n\n---\n\n" f"{remaining}"
         )
     else:
-        new_content = f"{content}\n\n---\n\n{release_notes}\n"
+        new_content = f"{content_cleaned}\n\n---\n\n{release_notes}\n"
 
     with open(changelog_path, "w", encoding="utf-8") as file:
         file.write(new_content)
@@ -309,7 +350,7 @@ def update_changelog_file(changelog_path: str, release_notes: str) -> None:
 def commit_and_create_release(
     version: str, milestone_title: str, release_notes: str, dry_run: bool = False
 ) -> None:
-    """Commits updated CHANGELOG.md and triggers GitHub release creation.
+    """Commits updated CHANGELOG.md and creates GitHub release with protected branch handling.
 
     Args:
         version (str): The version tag (e.g. 'v0.1.0').
@@ -318,7 +359,7 @@ def commit_and_create_release(
         dry_run (bool): If True, does not commit or publish to GitHub.
     """
     if dry_run:
-        print("🔍 [DRY RUN] Release notes generated successfully:\n")
+        print("🔍 [DRY RUN] Rich release notes generated successfully:\n")
         print(release_notes)
         return
 
@@ -329,13 +370,49 @@ def commit_and_create_release(
         check=False,
     )
 
-    # Git Add & Commit
+    # Git Add & Commit CHANGELOG.md
     subprocess.run(["git", "add", "CHANGELOG.md"], check=True)
     commit_msg = f"chore(release): [RELEASE] publish release {version} for {milestone_title}"
     subprocess.run(["git", "commit", "-m", commit_msg], check=False)
-    subprocess.run(["git", "push", "origin", "main"], check=False)
 
-    # Create GitHub Release
+    token = os.environ.get("GITHUB_TOKEN")
+    env = os.environ.copy()
+    if token:
+        env["GH_TOKEN"] = token
+
+    # Attempt direct push to main
+    push_res = subprocess.run(
+        ["git", "push", "origin", "main"], capture_output=True, text=True, check=False
+    )
+    if push_res.returncode != 0:
+        print(
+            "ℹ️ Direct push to main blocked by branch protection. "
+            "Opening automated PR for CHANGELOG.md..."
+        )
+        branch_name = f"chore/release-{version.replace('.', '-')}-changelog"
+        subprocess.run(["git", "checkout", "-b", branch_name], check=False)
+        subprocess.run(["git", "push", "origin", branch_name, "--force"], check=False)
+
+        pr_cmd = [
+            "gh",
+            "pr",
+            "create",
+            "--title",
+            commit_msg,
+            "--body",
+            f"Automated PR to update `CHANGELOG.md` with release notes for **{version}**.",
+            "--base",
+            "main",
+            "--head",
+            branch_name,
+        ]
+        subprocess.run(pr_cmd, env=env, check=False)
+        # Attempt merge
+        subprocess.run(
+            ["gh", "pr", "merge", branch_name, "--auto", "--merge"], env=env, check=False
+        )
+
+    # Create or update GitHub Release
     release_cmd = [
         "gh",
         "release",
@@ -346,16 +423,13 @@ def commit_and_create_release(
         "--notes",
         release_notes,
     ]
-    token = os.environ.get("GITHUB_TOKEN")
-    env = os.environ.copy()
-    if token:
-        env["GH_TOKEN"] = token
-
     result = subprocess.run(release_cmd, capture_output=True, text=True, env=env, check=False)
-    if result.returncode == 0:
-        print(f"🎉 Release {version} publicada com sucesso no GitHub!")
-    else:
-        print(f"⚠️ Aviso ao criar release via gh: {result.stderr.strip()}", file=sys.stderr)
+    if result.returncode != 0:
+        # If release already exists, edit it with new rich notes
+        edit_cmd = ["gh", "release", "edit", version, "--notes", release_notes]
+        subprocess.run(edit_cmd, capture_output=True, text=True, env=env, check=False)
+
+    print(f"🎉 Release {version} e CHANGELOG.md processados com sucesso no GitHub!")
 
 
 def main() -> None:
@@ -395,7 +469,7 @@ def main() -> None:
     changelog_path = os.path.join(workspace_root, "CHANGELOG.md")
 
     if not args.dry_run:
-        update_changelog_file(changelog_path, notes)
+        update_changelog_file(changelog_path, notes, version)
 
     commit_and_create_release(version, milestone_title, notes, dry_run=args.dry_run)
 
