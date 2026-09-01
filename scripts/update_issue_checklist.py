@@ -97,8 +97,8 @@ def _update_issue_checkboxes(repo: str, issue_number: int, token: str, metrics: 
     except Exception as exc:
         print(f"⚠️ Failed to post comment on Issue #{issue_number}: {exc}")
 
-    # Close issue and update body
-    patch_data = {"body": new_body, "state": "closed"}
+    # Close issue, mark reason as completed to advance milestone progress, and update body
+    patch_data = {"body": new_body, "state": "closed", "state_reason": "completed"}
     try:
         _github_api_request(issue_url, "PATCH", token, patch_data)
         print(
