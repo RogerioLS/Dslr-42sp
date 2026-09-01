@@ -129,8 +129,12 @@ def fetch_milestone_and_issues(repo: str, milestone_number: int) -> Dict[str, An
         Dict[str, Any]: Consolidated dictionary with milestone info and items.
     """
     milestone_data = run_gh_api(f"repos/{repo}/milestones/{milestone_number}")
-    open_count = milestone_data.get("open_issues", 0)
-    if open_count > 0:
+    # Query live open issues from GitHub API instead of relying on cached counters
+    open_items = run_gh_api(
+        f"repos/{repo}/issues?milestone={milestone_number}&state=open&per_page=100"
+    )
+    if open_items:
+        open_count = len(open_items)
         raise ValueError(
             f"❌ Bloqueio de Release: O Milestone '{milestone_data.get('title')}' "
             f"ainda possui {open_count} task(s) em aberto! "
