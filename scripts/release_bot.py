@@ -36,23 +36,23 @@ VERSION_TO_PREFIX_MAP: Dict[str, str] = {
 
 CATEGORY_DEFINITIONS: List[Dict[str, Any]] = [
     {
-        "title": "✨ Features & Algoritmos",
+        "title": "✨ Features & Algorithms",
         "labels": {"type: implementation", "area: model", "area: stats", "area: preprocessing"},
     },
     {
-        "title": "📈 Visualizações Gráficas",
+        "title": "📈 Data Visualizations",
         "labels": {"area: visualization"},
     },
     {
-        "title": "🛡️ Normas, Testes & Qualidade",
+        "title": "🛡️ Norms, Tests & Quality",
         "labels": {"type: test", "type: defense", "area: devops"},
     },
     {
-        "title": "📚 Documentação & Matemática",
+        "title": "📚 Documentation & Mathematics",
         "labels": {"type: docs", "type: math-heavy", "type: pedagogical"},
     },
     {
-        "title": "🐛 Correções de Bugs",
+        "title": "🐛 Bug Fixes",
         "labels": {"type: bug", "fix"},
     },
 ]

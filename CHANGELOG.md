@@ -13,24 +13,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.0] - 2026-09-01 — 01. Data Exploration & Handcrafted Stats
 
-### ✨ Features & Algoritmos
-- **[DSLR-04] CLI describe.py: Formatação Visual e Alinhamento de Tabela** ([#4](https://github.com/RogerioLS/Dslr-42sp/issues/4)) by @RogerioLS
-  - Criar `describe.py` na raiz do repositório.
-  - Tratar argumentos da CLI (`sys.argv`) com mensagens de erro claras se o arquivo não existir.
-  - Formatar o cabeçalho e as linhas com `{:>15.6f}` para alinhamento uniforme.
-  - Testar com `make describe`.
-- **[DSLR-03] Quantile Interpolation: Cálculo de Percentis (25%, 50%, 75%)** ([#3](https://github.com/RogerioLS/Dslr-42sp/issues/3)) by @RogerioLS
-  - Implementar algoritmo de ordenação ou usar `sorted()` em lista sem NaNs.
-  - Implementar a fórmula de interpolação linear (Método 7 - padrão Pandas).
-  - Cobrir casos de borda ($N=1$, mediana e quartis).
-- **[DSLR-02] Math from Scratch: Motor Estatístico (Count, Mean, Std, Min, Max)** ([#2](https://github.com/RogerioLS/Dslr-42sp/issues/2)) by @RogerioLS
-  - Implementar funções em `src/analytics/statistics.py` a partir de primeiros princípios matemáticos.
-  - Desvio padrão amostral com Correção de Bessel ($N-1$).
-  - Validar que `make norm` aprova a implementação sem erros.
-- **[DSLR-01] Data Pipeline: Carregamento do CSV e Tratamento de NaNs** ([#1](https://github.com/RogerioLS/Dslr-42sp/issues/1)) by @RogerioLS
-  - Criar módulo `src/analytics/loader.py` para carregar o CSV.
-  - Separar colunas numéricas de colunas categóricas/metadados (`Index`, `Hogwarts House`, etc.).
-  - Implementar filtro para desconsiderar NaNs no cálculo de cada coluna individual.
+### ✨ Features & Algorithms
+- **[DSLR-04] CLI describe.py: Visual Formatting and Tabular Alignment** ([#4](https://github.com/RogerioLS/Dslr-42sp/issues/4)) by @RogerioLS
+  - Implemented standalone `describe.py` CLI in repository root.
+  - Handled CLI arguments (`sys.argv`) with formatted error messages on `sys.stderr`.
+  - Formatted table headers and numerical rows with dynamic width and 6 decimal places (`{:>15.6f}`).
+  - Validated automated CLI execution via `make describe`.
+- **[DSLR-03] Quantile Interpolation: Handcrafted Percentiles (25%, 50%, 75%)** ([#3](https://github.com/RogerioLS/Dslr-42sp/issues/3)) by @RogerioLS
+  - Implemented continuous linear interpolation using Method 7 (official Pandas/NumPy standard).
+  - Covered boundary conditions ($N=1$, identical values, median and quartiles).
+- **[DSLR-02] Math from Scratch: Statistical Engine (Count, Mean, Std, Min, Max)** ([#2](https://github.com/RogerioLS/Dslr-42sp/issues/2)) by @RogerioLS
+  - Handcrafted descriptive statistical functions in `src/analytics/statistics.py` from first principles.
+  - Sample standard deviation computed with Bessel's correction ($N-1$).
+  - Verified 100% compliance against 42 Norm and Anti-Cheating rules.
+- **[DSLR-01] Data Pipeline: CSV Loading and NaN Handling** ([#1](https://github.com/RogerioLS/Dslr-42sp/issues/1)) by @RogerioLS
+  - Created resilient CSV loader in `src/analytics/loader.py`.
+  - Isolated numerical Hogwarts courses from metadata columns (`Index`, `Hogwarts House`, etc.).
+  - Implemented column-wise NaN filtering for isolated feature calculations.
 
 ---
 
