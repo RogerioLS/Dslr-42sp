@@ -5,7 +5,7 @@ using any external statistical libraries or built-in pandas/numpy aggregators.
 Adheres strictly to the 42 Norm and Anti-Cheating protocols.
 """
 
-from typing import Sequence
+from typing import Dict, Sequence
 
 
 def compute_count(values: Sequence[float]) -> int:
@@ -126,3 +126,67 @@ def compute_max(values: Sequence[float]) -> float:
             largest = f_val
 
     return largest
+
+
+def compute_percentile(values: Sequence[float], p: float) -> float:
+    """Computes quantile percentile using continuous linear interpolation (Method 7).
+
+    Follows the canonical Method 7 formulation (the default standard in Pandas & NumPy):
+        idx = p * (N - 1)
+        k = floor(idx)
+        d = idx - k
+        Q(p) = x_(k) + d * (x_(k+1) - x_(k))
+
+    Args:
+        values (Sequence[float]): Collection of non-null numerical values.
+        p (float): Quantile proportion between 0.0 and 1.0 (e.g. 0.25, 0.50, 0.75).
+
+    Returns:
+        float: Interpolated quantile value.
+
+    Raises:
+        ValueError: If the collection is empty or p is outside [0.0, 1.0].
+    """
+    n = compute_count(values)
+    if n == 0:
+        raise ValueError("Cannot compute percentile of an empty collection.")
+    if not 0.0 <= p <= 1.0:
+        raise ValueError(f"Percentile p must be between 0.0 and 1.0, got {p}.")
+
+    if n == 1:
+        return float(values[0])
+
+    sorted_vals = sorted(float(val) for val in values)
+    idx = p * (n - 1)
+    k = int(idx)
+    d = idx - k
+
+    if k >= n - 1:
+        return sorted_vals[-1]
+
+    return sorted_vals[k] + d * (sorted_vals[k + 1] - sorted_vals[k])
+
+
+def compute_stats_summary(values: Sequence[float]) -> Dict[str, float]:
+    """Computes all 8 canonical descriptive statistics required for describe.py.
+
+    Args:
+        values (Sequence[float]): Collection of non-null numerical values.
+
+    Returns:
+        Dict[str, float]: Dictionary mapping metric names to computed values:
+            'Count', 'Mean', 'Std', 'Min', '25%', '50%', '75%', 'Max'.
+
+    Raises:
+        ValueError: If the input collection has fewer than 2 elements.
+    """
+    return {
+        "Count": float(compute_count(values)),
+        "Mean": compute_mean(values),
+        "Std": compute_std(values),
+        "Min": compute_min(values),
+        "25%": compute_percentile(values, 0.25),
+        "50%": compute_percentile(values, 0.50),
+        "75%": compute_percentile(values, 0.75),
+        "Max": compute_max(values),
+    }
