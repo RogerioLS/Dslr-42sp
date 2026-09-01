@@ -5,9 +5,10 @@ on:
     types: [closed]
   workflow_dispatch:
     inputs:
-      milestone_number:
-        description: 'Milestone number to release (e.g. 1)'
+      milestone_target:
+        description: 'Milestone number (e.g. 1) or Version (e.g. v0.1.0)'
         required: true
+        default: '1'
         type: string
 
 permissions:
@@ -33,6 +34,6 @@ jobs:
       - name: Run Release Bot
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MILESTONE_NUM: ${{ github.event.milestone.number || inputs.milestone_number }}
+          MILESTONE_TARGET: ${{ github.event.milestone.number || inputs.milestone_target }}
         run: |
-          python3 scripts/release_bot.py --milestone-number "$MILESTONE_NUM"
+          python3 scripts/release_bot.py --milestone "$MILESTONE_TARGET"

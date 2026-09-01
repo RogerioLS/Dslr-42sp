@@ -23,6 +23,17 @@ MILESTONE_VERSION_MAP: Dict[str, str] = {
     "04": "v1.0.0",
 }
 
+VERSION_TO_PREFIX_MAP: Dict[str, str] = {
+    "0.1.0": "01",
+    "0.1": "01",
+    "0.2.0": "02",
+    "0.2": "02",
+    "0.3.0": "03",
+    "0.3": "03",
+    "1.0.0": "04",
+    "1.0": "04",
+}
+
 CATEGORY_DEFINITIONS: List[Dict[str, Any]] = [
     {
         "title": "✨ Features & Algoritmos",
@@ -94,6 +105,50 @@ def get_current_repo() -> str:
     if result.returncode == 0 and result.stdout.strip():
         return result.stdout.strip()
     return "RogerioLS/Dslr-42sp"
+
+
+def resolve_milestone_number(repo: str, raw_input: str) -> int:
+    """Resolves arbitrary user input (e.g. '1', 'v0.1.0', '0.1.0') to milestone integer ID.
+
+    Args:
+        repo (str): Repository in 'owner/repo' format.
+        raw_input (str): User supplied string from CLI or workflow input.
+
+    Returns:
+        int: The resolved milestone number.
+
+    Raises:
+        ValueError: If the milestone cannot be found.
+    """
+    clean_val = raw_input.strip()
+
+    # Case 1: Pure integer (e.g. "1", "01")
+    if clean_val.isdigit():
+        return int(clean_val)
+
+    # Fetch all milestones from repo
+    milestones = run_gh_api(f"repos/{repo}/milestones?state=all&per_page=100")
+    if not isinstance(milestones, list):
+        milestones = []
+
+    # Case 2: Version string (e.g. "v0.1.0", "0.1.0")
+    norm_version = clean_val.lstrip("v")
+    prefix = VERSION_TO_PREFIX_MAP.get(norm_version)
+
+    for ms in milestones:
+        title = ms.get("title", "")
+        # Check by prefix match (e.g. "01")
+        if prefix and title.startswith(prefix):
+            return int(ms["number"])
+        # Check by exact title match
+        if clean_val.lower() in title.lower():
+            return int(ms["number"])
+
+    # Fallback to first milestone if matched
+    if milestones:
+        return int(milestones[0]["number"])
+
+    raise ValueError(f"Could not resolve milestone number for input: '{raw_input}'")
 
 
 def determine_version(milestone_title: str) -> str:
@@ -308,9 +363,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="42 DSLR Automated Milestone Release Bot")
     parser.add_argument(
         "--milestone-number",
-        type=int,
+        "--milestone",
+        dest="milestone_target",
+        type=str,
         required=True,
-        help="The GitHub milestone number (e.g. 1)",
+        help="The GitHub milestone number (e.g. '1') or version tag (e.g. 'v0.1.0')",
     )
     parser.add_argument(
         "--dry-run",
@@ -320,10 +377,15 @@ def main() -> None:
     args = parser.parse_args()
 
     repo = get_current_repo()
-    print(f"🤖 [RELEASE BOT] Processando Milestone #{args.milestone_number} no repo '{repo}'...")
+    milestone_num = resolve_milestone_number(repo, args.milestone_target)
 
-    data = fetch_milestone_and_issues(repo, args.milestone_number)
-    milestone_title = data["milestone"].get("title", f"Milestone #{args.milestone_number}")
+    print(
+        f"🤖 [RELEASE BOT] Resolvido '{args.milestone_target}' -> "
+        f"Milestone #{milestone_num} no repo '{repo}'..."
+    )
+
+    data = fetch_milestone_and_issues(repo, milestone_num)
+    milestone_title = data["milestone"].get("title", f"Milestone #{milestone_num}")
     version = determine_version(milestone_title)
 
     categorized = categorize_items(data["items"])
