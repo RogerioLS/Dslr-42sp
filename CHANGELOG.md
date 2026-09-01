@@ -9,18 +9,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-- Data pipeline module (`src/analytics/loader.py`) for CSV ingestion and NaN handling `[DSLR-01]`.
-- Unit test suite for data loading and feature extraction (`tests/unit/test_loader.py`).
-- Modular packages scaffolding (`src/analytics/`, `src/preprocessing/`, `src/model/`, `src/visualization/`).
-- Automated AST Norm & Anti-Cheating checker (`scripts/norm_check.py`).
-- 98% accuracy threshold evaluator (`scripts/evaluate_accuracy.py`).
-- Incremental PR summary reporter (`scripts/generate_summary.py`).
-- Dynamic PR renamer and automated checklist updater (`scripts/rename_pr.py`, `scripts/update_pr_checklist.py`).
-- Interactive ANSI Makefile Command Center with `make check`, `make audit`, `make summary`.
-- Dual test suite architecture (`tests/unit/` and `tests/integration/`).
-- GitHub CI/CD quality gate enforcement with dynamic PR naming.
-- Structured GitHub Issue Templates in YAML (`bug_report.yml`, `task_request.yml`, `math_discussion.yml`).
+---
+
+## [0.1.0] - 2026-09-01 — 01. Data Exploration & Handcrafted Stats
+
+### ✨ Features & Algoritmos
+- **[DSLR-04] CLI describe.py: Formatação Visual e Alinhamento de Tabela** ([#4](https://github.com/RogerioLS/Dslr-42sp/issues/4)) by @RogerioLS
+  - Criar `describe.py` na raiz do repositório.
+  - Tratar argumentos da CLI (`sys.argv`) com mensagens de erro claras se o arquivo não existir.
+  - Formatar o cabeçalho e as linhas com `{:>15.6f}` para alinhamento uniforme.
+  - Testar com `make describe`.
+- **[DSLR-03] Quantile Interpolation: Cálculo de Percentis (25%, 50%, 75%)** ([#3](https://github.com/RogerioLS/Dslr-42sp/issues/3)) by @RogerioLS
+  - Implementar algoritmo de ordenação ou usar `sorted()` em lista sem NaNs.
+  - Implementar a fórmula de interpolação linear.
+  - Cobrir casos de borda (=1$, valores idênticos, lista vazia).
+- **[DSLR-02] Math from Scratch: Motor Estatístico (Count, Mean, Std, Min, Max)** ([#2](https://github.com/RogerioLS/Dslr-42sp/issues/2)) by @RogerioLS
+  - Implementar funções em `src/analytics/statistics.py`.
+  - Garantir complexidade de tempo linear (N)$ para média e variância.
+  - Validar que `make norm` aprova a implementação sem erros.
+- **[DSLR-01] Data Pipeline: Carregamento do CSV e Tratamento de NaNs** ([#1](https://github.com/RogerioLS/Dslr-42sp/issues/1)) by @RogerioLS
+  - Criar módulo `src/analytics/loader.py` ou parser no pandas/numpy para carregar o CSV.
+  - Separar colunas numéricas de colunas categóricas/metadados (`Index`, `Hogwarts House`, `First Name`, `Last Name`, `Birthday`, `Best Hand`).
+  - Implementar filtro para desconsiderar NaNs no cálculo de cada coluna individual.
+---
+
+## [0.1.0] - 2026-09-01 — 01. Data Exploration & Handcrafted Stats
+
+### ✨ Features & Algoritmos
+- **[DSLR-04] CLI describe.py: Formatação Visual e Alinhamento de Tabela** ([#4](https://github.com/RogerioLS/Dslr-42sp/issues/4)) by @RogerioLS
+  - Criar `describe.py` na raiz do repositório.
+  - Tratar argumentos da CLI (`sys.argv`) com mensagens de erro claras se o arquivo não existir.
+  - Formatar o cabeçalho e as linhas com alinhamento tabular e 6 casas decimais.
+  - Testar com `make describe`.
+- **[DSLR-03] Quantile Interpolation: Cálculo de Percentis (25%, 50%, 75%)** ([#3](https://github.com/RogerioLS/Dslr-42sp/issues/3)) by @RogerioLS
+  - Implementar algoritmo de ordenação ou usar `sorted()` em lista sem NaNs.
+  - Implementar a fórmula de interpolação linear (Método 7 - padrão Pandas).
+  - Cobrir casos de borda ($N=1$, mediana e quartis).
+- **[DSLR-02] Math from Scratch: Motor Estatístico (Count, Mean, Std, Min, Max)** ([#2](https://github.com/RogerioLS/Dslr-42sp/issues/2)) by @RogerioLS
+  - Implementar funções em `src/analytics/statistics.py` a partir de primeiros princípios matemáticos.
+  - Desvio padrão amostral com Correção de Bessel ($N-1$).
+  - Validar que `make norm` aprova a implementação sem erros.
+- **[DSLR-01] Data Pipeline: Carregamento do CSV e Tratamento de NaNs** ([#1](https://github.com/RogerioLS/Dslr-42sp/issues/1)) by @RogerioLS
+  - Criar módulo `src/analytics/loader.py` para carregar o CSV.
+  - Separar colunas numéricas de colunas categóricas/metadados (`Index`, `Hogwarts House`, etc.).
+  - Implementar filtro para desconsiderar NaNs no cálculo de cada coluna individual.
 
 ---
 
