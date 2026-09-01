@@ -1,4 +1,4 @@
-"""Unit tests for src.analytics.statistics module (DSLR-02 Core Math).
+"""Unit tests for src.analytics.statistics module (DSLR-02 and DSLR-03 Core Math).
 
 Verifies mathematical accuracy of handcrafted statistical functions against
 official ground truth and Pandas/NumPy reference outputs with 1e-6 precision tolerance.
@@ -16,6 +16,8 @@ from src.analytics.statistics import (
     compute_max,
     compute_mean,
     compute_min,
+    compute_percentile,
+    compute_stats_summary,
     compute_std,
 )
 
@@ -26,6 +28,7 @@ class TestStatisticsMath(unittest.TestCase):
     def setUp(self) -> None:
         """Sets up test synthetic collections and dataset paths."""
         self.sample_data = [10.0, 20.0, 30.0, 40.0, 50.0]
+        self.even_data = [1.0, 2.0, 3.0, 4.0]
         self.mixed_data = [-15.5, 0.0, 42.123, -100.8, 88.9, 3.1415]
         self.single_data = [42.0]
 
@@ -75,6 +78,51 @@ class TestStatisticsMath(unittest.TestCase):
         with self.assertRaises(ValueError):
             compute_max([])
 
+    def test_compute_percentile_basics(self) -> None:
+        """Verifies percentiles for boundary conditions, single elements, and medians."""
+        self.assertEqual(compute_percentile(self.single_data, 0.5), 42.0)
+        self.assertEqual(compute_percentile(self.single_data, 0.0), 42.0)
+        self.assertEqual(compute_percentile(self.single_data, 1.0), 42.0)
+
+        self.assertEqual(compute_percentile(self.sample_data, 0.0), 10.0)
+        self.assertEqual(compute_percentile(self.sample_data, 0.5), 30.0)
+        self.assertEqual(compute_percentile(self.sample_data, 1.0), 50.0)
+
+        # Even dataset [1.0, 2.0, 3.0, 4.0]: median is 2.5
+        self.assertEqual(compute_percentile(self.even_data, 0.5), 2.5)
+
+    def test_compute_percentile_against_pandas(self) -> None:
+        """Verifies Method 7 interpolation against Pandas series.quantile()."""
+        series = pd.Series(self.mixed_data)
+        quantiles = [0.0, 0.1, 0.25, 0.33, 0.5, 0.75, 0.9, 1.0]
+
+        for q in quantiles:
+            expected = float(series.quantile(q))
+            result = compute_percentile(self.mixed_data, q)
+            self.assertAlmostEqual(result, expected, places=7)
+
+    def test_compute_percentile_exceptions(self) -> None:
+        """Verifies compute_percentile raises ValueError on invalid inputs."""
+        with self.assertRaises(ValueError):
+            compute_percentile([], 0.5)
+        with self.assertRaises(ValueError):
+            compute_percentile(self.sample_data, -0.1)
+        with self.assertRaises(ValueError):
+            compute_percentile(self.sample_data, 1.1)
+
+    def test_compute_stats_summary(self) -> None:
+        """Verifies compute_stats_summary returns all 8 required metrics."""
+        summary = compute_stats_summary(self.sample_data)
+        expected_keys = ["Count", "Mean", "Std", "Min", "25%", "50%", "75%", "Max"]
+        self.assertEqual(list(summary.keys()), expected_keys)
+        self.assertEqual(summary["Count"], 5.0)
+        self.assertEqual(summary["Mean"], 30.0)
+        self.assertEqual(summary["Min"], 10.0)
+        self.assertEqual(summary["25%"], 20.0)
+        self.assertEqual(summary["50%"], 30.0)
+        self.assertEqual(summary["75%"], 40.0)
+        self.assertEqual(summary["Max"], 50.0)
+
     def test_dataset_train_all_features_ground_truth(self) -> None:
         """Validates handcrafted statistics across all 13 Hogwarts courses in real dataset."""
         df = load_csv(self.train_dataset_path)
@@ -88,6 +136,15 @@ class TestStatisticsMath(unittest.TestCase):
             self.assertAlmostEqual(compute_mean(values), float(series.mean()), places=5)
             self.assertAlmostEqual(compute_std(values), float(series.std()), places=5)
             self.assertAlmostEqual(compute_min(values), float(series.min()), places=5)
+            self.assertAlmostEqual(
+                compute_percentile(values, 0.25), float(series.quantile(0.25)), places=5
+            )
+            self.assertAlmostEqual(
+                compute_percentile(values, 0.50), float(series.quantile(0.50)), places=5
+            )
+            self.assertAlmostEqual(
+                compute_percentile(values, 0.75), float(series.quantile(0.75)), places=5
+            )
             self.assertAlmostEqual(compute_max(values), float(series.max()), places=5)
 
 
