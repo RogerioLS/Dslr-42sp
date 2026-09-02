@@ -14,7 +14,16 @@ from src.analytics.statistics import compute_stats_summary
 
 HOUSES = ["Gryffindor", "Hufflepuff", "Ravenclaw", "Slytherin"]
 
+HOUSE_COLORS = {
+    "Gryffindor": "red",
+    "Hufflepuff": "gold",
+    "Ravenclaw": "blue",
+    "Slytherin": "green",
+}
+
+
 def main() -> None:
+    """Loads the dataset and plots overlapping score histograms per house for each course."""
     if len(sys.argv) != 2:
         print("Usage: python3 histogram.py <dataset.csv>")
         sys.exit()
@@ -43,7 +52,7 @@ def main() -> None:
         for house in HOUSES:
             house_df = df[df["Hogwarts House"] == house]
             values = extract_valid_feature_values(house_df, course)
-            ax.hist(values, bins=20, alpha=0.5, label=house)
+            ax.hist(values, bins=20, alpha=0.5, label=house, color=HOUSE_COLORS[house])
         ax.set_title(course, fontsize=9)
 
     for j in range(n_courses, len(axes)):

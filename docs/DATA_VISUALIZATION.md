@@ -5,7 +5,23 @@ This document records the visual findings corresponding to the three mandatory e
 ## 1. Histogram (`histogram.py`)
 * **Question**: *Which Hogwarts course has a homogeneous score distribution between all four houses?*
 * **Analysis**: Features with identical bell curves/distributions across Gryffindor, Hufflepuff, Ravenclaw, and Slytherin provide no discriminative power for classification.
-* **Finding**: *(To be documented during visualization phase analysis)*.
+* **Finding**: **Arithmancy** has a homogeneous score distribution across all four houses.
+  Visually, the 13-course grid shows most subjects splitting into two or more clearly
+  separated humps by house (e.g. Astronomy, Herbology, Transfiguration, Charms, Flying),
+  while Arithmancy and Care of Magical Creatures both show heavily overlapping,
+  single-hump distributions. Comparing the two numerically (mean difference between
+  houses relative to each house's standard deviation, since the two courses use very
+  different score scales) breaks the tie:
+
+  | Course | Mean range across houses | Avg. std | Relative spread |
+  |---|---|---|---|
+  | Arithmancy | 49,122 – 50,249 | ≈ 16,578 | **≈ 6.8%** |
+  | Care of Magical Creatures | -0.14 – 0.00 | ≈ 0.97 | ≈ 14.4% |
+
+  Arithmancy's house means are proportionally closer together, confirming it as the
+  more homogeneous course — even though Care of Magical Creatures looks like a tighter
+  single blob at first glance, since its raw score scale (-1 to 1) makes small absolute
+  differences look visually smaller than they proportionally are.
 
 ## 2. Scatter Plot (`scatter_plot.py`)
 * **Question**: *What are the two features that are similar?*
