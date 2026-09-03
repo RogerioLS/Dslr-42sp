@@ -1,4 +1,4 @@
-name: 🌿 Branch & Commit Quality Gate
+name: 🌿 Branch Name & Task Format Quality Gate
 
 on:
   pull_request:
@@ -9,8 +9,8 @@ permissions:
   pull-requests: write
 
 jobs:
-  governance_lint:
-    name: Validate Branch & Commit Format
+  branch_lint:
+    name: Validate Branch & Task Format
     runs-on: ubuntu-latest
 
     steps:
