@@ -1,0 +1,39 @@
+name: 🚀 Milestone Release & Changelog Bot
+
+on:
+  milestone:
+    types: [closed]
+  workflow_dispatch:
+    inputs:
+      milestone_target:
+        description: 'Milestone number (e.g. 1) or Version (e.g. v0.1.0)'
+        required: true
+        default: '1'
+        type: string
+
+permissions:
+  contents: write
+  issues: read
+  pull-requests: read
+
+jobs:
+  publish-milestone-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Run Release Bot
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MILESTONE_TARGET: ${{ github.event.milestone.number || inputs.milestone_target }}
+        run: |
+          python3 scripts/release_bot.py --milestone "$MILESTONE_TARGET"

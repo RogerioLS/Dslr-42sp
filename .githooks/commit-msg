@@ -47,7 +47,7 @@ RAW_TASK_TAG="${BASH_REMATCH[5]}"
 TASK_TAG=$(echo "$RAW_TASK_TAG" | cut -d':' -f1)
 
 # Reserved global tags that don't need a matching file in .github/issues/
-RESERVED_TAGS=("INFRA" "CHORE" "DOCS" "FIX" "HOTFIX" "GLOBAL" "CONFIG" "SECURITY" "COMMUNITY" "DEPS")
+RESERVED_TAGS=("INFRA" "CHORE" "DOCS" "FIX" "HOTFIX" "GLOBAL" "CONFIG" "SECURITY" "COMMUNITY" "DEPS" "RELEASE")
 
 if [ -n "$TASK_TAG" ]; then
     UPPER_TAG=$(echo "$TASK_TAG" | tr '[:lower:]' '[:upper:]')
