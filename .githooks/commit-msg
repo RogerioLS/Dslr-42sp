@@ -17,26 +17,26 @@ fi
 #   ✨ feat(analytics): [DSLR-01:#1] load dataset and clean nans
 #   📝 docs(theory): [DSLR-02:#2] derive mathematical formulas
 #   🔧 chore(build): [INFRA] update pre-commit hooks
-COMMIT_REGEX="^([^:]* )?(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-zA-Z0-9_\/-]+\))?:[[:space:]]+(\[([a-zA-Z0-9_:#-]+)\])?[[:space:]]+(.+)$"
+COMMIT_REGEX="^([^:]* )?(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-zA-Z0-9_\/-]+\))?:\s*(\[([a-zA-Z0-9_:#-]+)\])?\s*(.+)$"
 
 if ! [[ "$COMMIT_MSG" =~ $COMMIT_REGEX ]]; then
     echo ""
     echo "========================================================================"
-    echo " ⛔ COMMIT REJEITADO: MENSAGEM FORA DO PADRÃO INSTITUCIONAL 42"
+    echo " ⛔ COMMIT REJECTED: MESSAGE DOES NOT COMPLY WITH 42 GOVERNANCE"
     echo "========================================================================"
-    echo " ❌ Sua mensagem: \"$COMMIT_MSG\""
+    echo " ❌ Your message: \"$COMMIT_MSG\""
     echo ""
-    echo " 📐 Formato Obrigatório:"
-    echo "    <type>(<scope>): [<TASK-ID>:#<ISSUE_NUM>] <descrição da alteração>"
-    echo "    ou: <type>(<scope>): [<TASK-ID>] <descrição da alteração>"
+    echo " 📐 Required Format:"
+    echo "    <type>(<scope>): [<TASK-ID>:#<ISSUE_NUM>] <description in lowercase>"
+    echo "    or: <type>(<scope>): [<TASK-ID>] <description in lowercase>"
     echo ""
-    echo " 📌 Exemplos Válidos:"
+    echo " 📌 Valid Examples:"
     echo "    feat(analytics): [DSLR-01:#1] load csv and handle missing values"
     echo "    feat(math): [DSLR-02:#2] implement count and mean from scratch"
     echo "    docs(theory): [DSLR-09:#9] derive binary cross-entropy loss function"
     echo "    chore(build): [INFRA] configure pre-commit and ast norm checker"
     echo ""
-    echo " 💡 Tipos Válidos:"
+    echo " 💡 Allowed Types:"
     echo "    feat, fix, docs, test, refactor, perf, build, ci, chore"
     echo "========================================================================"
     exit 1
@@ -69,11 +69,11 @@ if [ -n "$TASK_TAG" ]; then
     if [ -z "$MATCHING_TASK" ] && [ -d "$ISSUES_DIR" ]; then
         echo ""
         echo "========================================================================"
-        echo " ⛔ COMMIT REJEITADO: TASK NÃO ENCONTRADA NO PROJETO"
+        echo " ⛔ COMMIT REJECTED: TASK ID NOT FOUND IN PROJECT"
         echo "========================================================================"
-        echo " ❌ A task \"[$TASK_TAG]\" não existe na pasta .github/issues/."
+        echo " ❌ The task \"[$TASK_TAG]\" does not exist in .github/issues/."
         echo ""
-        echo " 📋 Tasks válidas encontradas localmente:"
+        echo " 📋 Valid tasks found locally:"
         for f in "$ISSUES_DIR"/*.md; do
             if [ -f "$f" ]; then
                 BASENAME=$(basename "$f" .md)
@@ -81,11 +81,11 @@ if [ -n "$TASK_TAG" ]; then
             fi
         done
         echo ""
-        echo " 💡 O que fazer:"
-        echo "    1. Se for uma task do subject, verifique o ID correto (ex: DSLR-01 a DSLR-13);"
-        echo "    2. Se for uma nova task, crie o arquivo .github/issues/dslr-XX-nome.md;"
-        echo "    3. Se for uma alteração geral sem task, use uma tag reservada:"
-        echo "       [INFRA], [CHORE], [DOCS], [HOTFIX], [SECURITY], [GLOBAL]"
+        echo " 💡 What to do:"
+        echo "    1. If this is a subject task, verify the correct ID (e.g. DSLR-01 to DSLR-13);"
+        echo "    2. If this is a new task, create the file .github/issues/dslr-XX-name.md;"
+        echo "    3. If this is a general change without a task, use a reserved tag:"
+        echo "       [INFRA], [CHORE], [DOCS], [HOTFIX], [SECURITY], [GLOBAL], [RELEASE]"
         echo "========================================================================"
         exit 1
     fi

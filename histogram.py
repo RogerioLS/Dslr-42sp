@@ -1,67 +1,44 @@
 """Histogram CLI for 42 DSLR.
 
-Plots the score distribution per Hogwarts house for each course,
-to identify which course has a homogeneous distribution across houses.
+Analyzes score distributions per Hogwarts house for each course,
+answering the question: Which Hogwarts course has a homogeneous score
+distribution between all four houses?
 """
 
-import math
 import sys
+from pathlib import Path
 
-import matplotlib.pyplot as plt
-
-from src.analytics.loader import load_csv, HOGWARTS_COURSES, extract_valid_feature_values
-from src.analytics.statistics import compute_stats_summary
-
-HOUSES = ["Gryffindor", "Hufflepuff", "Ravenclaw", "Slytherin"]
-
-HOUSE_COLORS = {
-    "Gryffindor": "red",
-    "Hufflepuff": "gold",
-    "Ravenclaw": "blue",
-    "Slytherin": "green",
-}
+from src.analytics.loader import load_csv
+from src.visualization.histogram import find_most_homogeneous_course, plot_histograms_grid
 
 
 def main() -> None:
-    """Loads the dataset and plots overlapping score histograms per house for each course."""
+    """CLI entrypoint for histogram feature distribution analysis."""
     if len(sys.argv) != 2:
-        print("Usage: python3 histogram.py <dataset.csv>")
-        sys.exit()
+        print("Usage: python3 histogram.py <dataset_train.csv>", file=sys.stderr)
+        sys.exit(1)
 
     dataset_path = sys.argv[1]
-    df = load_csv(dataset_path)
+    if not Path(dataset_path).exists():
+        print(f"Error: File '{dataset_path}' not found.", file=sys.stderr)
+        sys.exit(1)
 
-    candidates = ["Arithmancy", "Care of Magical Creatures"]
-    for course in candidates:
-        print(f"\n{course}:")
-        for house in HOUSES:
-            house_df = df[df["Hogwarts House"] == house]
-            values = extract_valid_feature_values(house_df, course)
-            stats = compute_stats_summary(values)
-            print(f"  {house}: mean={stats['Mean']:.2f}  std={stats['Std']:.2f}")
+    try:
+        df = load_csv(dataset_path)
+    except Exception as exc:
+        print(f"Error loading dataset: {exc}", file=sys.stderr)
+        sys.exit(1)
 
-    n_courses = len(HOGWARTS_COURSES)
-    n_cols = 4
-    n_rows = math.ceil(n_courses / n_cols)
+    homogeneous_course, variance = find_most_homogeneous_course(df)
+    print("\n" + "=" * 65)
+    print(" 🧙‍♂️ 42 DSLR — HISTOGRAM DISTRIBUTION ANALYSIS")
+    print("=" * 65)
+    print(f" 📊 Most Homogeneous Course: {homogeneous_course}")
+    print(f" 📉 Variance between house means: {variance:.4f}")
+    print("=" * 65 + "\n")
 
-    fig, axes = plt.subplots(n_rows, n_cols, figsize=(16, 12))
-    axes = axes.flatten()
+    plot_histograms_grid(df, output_path="histogram_grid.png", show=True)
 
-    for i, course in enumerate(HOGWARTS_COURSES):
-        ax = axes[i]
-        for house in HOUSES:
-            house_df = df[df["Hogwarts House"] == house]
-            values = extract_valid_feature_values(house_df, course)
-            ax.hist(values, bins=20, alpha=0.5, label=house, color=HOUSE_COLORS[house])
-        ax.set_title(course, fontsize=9)
 
-    for j in range(n_courses, len(axes)):
-        axes[j].axis("off")
-
-    axes[0].legend(fontsize=7)
-    plt.tight_layout()
-    plt.savefig("histogram_grid.png")
-    plt.show()
-        
 if __name__ == "__main__":
-    main()  
+    main()
