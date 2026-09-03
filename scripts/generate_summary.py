@@ -8,7 +8,6 @@ unit test discovery, security scan, data visualization plot artifacts) and produ
 """
 
 import json
-import os
 import subprocess
 import sys
 from datetime import datetime
@@ -179,20 +178,6 @@ def _build_markdown(
         desc = p["description"]
         row = f"| `{p['filename']}` | `{p['cli']}` | " f"{p['status']} | {p['size']} | {desc} |"
         md.append(row)
-
-    repo = os.environ.get("GITHUB_REPOSITORY", "RogerioLS/Dslr-42sp")
-    branch = os.environ.get("GITHUB_HEAD_REF") or os.environ.get("GITHUB_REF_NAME", "main")
-
-    generated_plots = [p for p in plots if p["status"] == "✅ Generated"]
-    if generated_plots:
-        md.append("\n### 🖼️ Rendered Visual Artifacts\n")
-        for p in generated_plots:
-            img_url = f"https://raw.githubusercontent.com/{repo}/{branch}/{p['filename']}"
-            md.append(f"<details open><summary><b>📊 {p['filename']} Preview</b></summary>\n")
-            md.append(
-                f'<p align="center"><img src="{img_url}" alt="{p["filename"]}" width="90%"></p>\n'
-            )
-            md.append("</details>\n")
 
     md.extend(
         [

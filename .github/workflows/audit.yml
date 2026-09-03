@@ -19,10 +19,10 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       - name: Set up Python 3.10
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
@@ -30,6 +30,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install numpy pandas matplotlib seaborn scikit-learn bandit
+
+      - name: Execute Visualization Deliverables (Headless Plot Generation)
+        run: |
+          if [ -f "histogram.py" ]; then
+            MPLBACKEND=Agg python histogram.py datasets/dataset_train.csv || true
+          fi
 
       - name: Generate Audit Summary & Artifacts
         run: |
@@ -71,12 +77,13 @@ jobs:
 
       - name: Upload Audit Artifacts
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: 42-dslr-audit-report
           path: |
             summary.md
             artifacts/
+            *.png
 
       - name: Enforce Strict Quality Gate (Fail if Audit Failed)
         run: |
