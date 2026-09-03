@@ -1,21 +1,41 @@
-#!/usr/bin/env python3
+#!/usr/bin/env bash
 """Summary Generator for 42 DSLR GitHub Actions.
 
 Runs incremental audit checks (syntax compilation, 42 norm & anti-cheating,
-unit test discovery, security scan) and produces:
+unit test discovery, security scan, data visualization plot artifacts) and produces:
 - summary.md: Visual Markdown report for PR comments and $GITHUB_STEP_SUMMARY.
 - artifacts/audit_summary.json: Metrics data for PR renamer and checklist updater.
 """
 
 import json
+import os
 import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
+from typing import Dict, List
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 ARTIFACTS_DIR = BASE_DIR / "artifacts"
 ARTIFACTS_DIR.mkdir(exist_ok=True)
+
+PLOT_DEFINITIONS: List[Dict[str, str]] = [
+    {
+        "filename": "histogram_grid.png",
+        "cli": "histogram.py",
+        "description": "Score distributions per Hogwarts house (homogeneous course identification)",
+    },
+    {
+        "filename": "scatter_plot.png",
+        "cli": "scatter_plot.py",
+        "description": "Bivariate feature correlation & collinearity visualization",
+    },
+    {
+        "filename": "pair_plot.png",
+        "cli": "pair_plot.py",
+        "description": "Multivariate feature pairwise relationship matrix",
+    },
+]
 
 
 def run_command(cmd: list[str]) -> tuple[int, str]:
@@ -65,6 +85,40 @@ def _check_unit_tests() -> tuple[str, str, int, int]:
     return status, out, passed, total
 
 
+def _check_plot_artifacts() -> List[Dict[str, str]]:
+    """Inspects workspace for generated data visualization PNG artifacts."""
+    results: List[Dict[str, str]] = []
+    for plot in PLOT_DEFINITIONS:
+        file_path = BASE_DIR / plot["filename"]
+        alt_path = ARTIFACTS_DIR / plot["filename"]
+        target = file_path if file_path.exists() else (alt_path if alt_path.exists() else None)
+
+        if target and target.exists():
+            size_kb = target.stat().st_size / 1024
+            results.append(
+                {
+                    "filename": plot["filename"],
+                    "cli": plot["cli"],
+                    "status": "✅ Generated",
+                    "size": f"{size_kb:.1f} KB",
+                    "description": plot["description"],
+                }
+            )
+        else:
+            cli_exists = (BASE_DIR / plot["cli"]).exists()
+            status = "⏳ Pending Generation" if cli_exists else "⏳ In Development"
+            results.append(
+                {
+                    "filename": plot["filename"],
+                    "cli": plot["cli"],
+                    "status": status,
+                    "size": "-",
+                    "description": plot["description"],
+                }
+            )
+    return results
+
+
 def _build_markdown(
     overall_status: str,
     timestamp: str,
@@ -78,6 +132,7 @@ def _build_markdown(
     total_tests: int,
     sec_status: str,
     deliverables: dict[str, bool],
+    plots: List[Dict[str, str]],
     norm_out: str,
     test_out: str,
 ) -> str:
@@ -111,6 +166,33 @@ def _build_markdown(
     for file_name, phase in phase_map.items():
         st = "✅ Ready" if deliverables[file_name] else "⏳ In Progress"
         md.append(f"| `{file_name}` | {phase} | {st} |")
+
+    md.extend(
+        [
+            "\n## 📈 Data Visualizations & Plot Artifacts",
+            "| Plot Artifact | Associated CLI | Status | File Size | Details |",
+            "| :--- | :--- | :--- | :--- | :--- |",
+        ]
+    )
+
+    for p in plots:
+        desc = p["description"]
+        row = f"| `{p['filename']}` | `{p['cli']}` | " f"{p['status']} | {p['size']} | {desc} |"
+        md.append(row)
+
+    repo = os.environ.get("GITHUB_REPOSITORY", "RogerioLS/Dslr-42sp")
+    branch = os.environ.get("GITHUB_HEAD_REF") or os.environ.get("GITHUB_REF_NAME", "main")
+
+    generated_plots = [p for p in plots if p["status"] == "✅ Generated"]
+    if generated_plots:
+        md.append("\n### 🖼️ Rendered Visual Artifacts\n")
+        for p in generated_plots:
+            img_url = f"https://raw.githubusercontent.com/{repo}/{branch}/{p['filename']}"
+            md.append(f"<details open><summary><b>📊 {p['filename']} Preview</b></summary>\n")
+            md.append(
+                f'<p align="center"><img src="{img_url}" alt="{p["filename"]}" width="90%"></p>\n'
+            )
+            md.append("</details>\n")
 
     md.extend(
         [
@@ -158,6 +240,8 @@ def main() -> None:
     }
     implemented_count = sum(1 for v in deliverables.values() if v)
 
+    plots = _check_plot_artifacts()
+
     overall_passed = (
         compile_status == "✅ PASSED" and norm_status == "✅ PASSED" and test_status == "✅ PASSED"
     )
@@ -177,6 +261,7 @@ def main() -> None:
         total_tests,
         sec_status,
         deliverables,
+        plots,
         norm_out,
         test_out,
     )
@@ -185,17 +270,21 @@ def main() -> None:
         f.write(summary_text)
 
     metrics = {
+        "timestamp": timestamp,
         "overall_passed": overall_passed,
+        "implemented_count": implemented_count,
+        "total_deliverables": 6,
+        "py_files_count": py_count,
         "norm_errors": norm_errors,
         "passed_tests": passed_tests,
         "total_tests": total_tests,
-        "implemented_deliverables": implemented_count,
-        "timestamp": timestamp,
+        "plots": plots,
     }
+
     with open(ARTIFACTS_DIR / "audit_summary.json", "w", encoding="utf-8") as f:
         json.dump(metrics, f, indent=2)
 
-    print(summary_text)
+    print("✔ Audit summary and metrics JSON generated successfully.")
 
 
 if __name__ == "__main__":
