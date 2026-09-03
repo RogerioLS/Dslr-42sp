@@ -183,7 +183,7 @@ def _build_markdown(
     if generated_plots:
         md.append("\n### 🖼️ Rendered Visual Artifacts (GitHub Pages CDN)\n")
         for p in generated_plots:
-            img_url = f"https://rogeriols.github.io/Dslr-42sp/plots/{p['filename']}"
+            img_url = f"https://rogeriols.github.io/Dslr-42sp/assets/plots/{p['filename']}"
             md.append(f"<details open><summary><b>📊 {p['filename']} Preview</b></summary>\n")
             md.append(
                 f'<p align="center"><img src="{img_url}" alt="{p["filename"]}" width="90%"></p>\n'

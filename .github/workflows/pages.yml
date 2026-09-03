@@ -37,28 +37,33 @@ jobs:
 
       - name: Generate Visual Artifacts & Dashboard
         run: |
-          mkdir -p public/plots
+          mkdir -p public/assets/plots
+          mkdir -p public/assets/images
+          mkdir -p public/docs
 
           if [ -f "histogram.py" ]; then
             MPLBACKEND=Agg python3 histogram.py datasets/dataset_train.csv || true
             if [ -f "histogram_grid.png" ]; then
-              cp histogram_grid.png public/plots/
+              cp histogram_grid.png public/assets/plots/
             fi
           fi
 
           if [ -f "scatter_plot.py" ]; then
             MPLBACKEND=Agg python3 scatter_plot.py datasets/dataset_train.csv || true
             if [ -f "scatter_plot.png" ]; then
-              cp scatter_plot.png public/plots/
+              cp scatter_plot.png public/assets/plots/
             fi
           fi
 
           if [ -f "pair_plot.py" ]; then
             MPLBACKEND=Agg python3 pair_plot.py datasets/dataset_train.csv || true
             if [ -f "pair_plot.png" ]; then
-              cp pair_plot.png public/plots/
+              cp pair_plot.png public/assets/plots/
             fi
           fi
+
+          # Backward compatibility alias for /plots/
+          ln -s assets/plots public/plots || cp -r public/assets/plots public/plots
 
           # Create sleek HTML dashboard index
           cat << 'EOF' > public/index.html
