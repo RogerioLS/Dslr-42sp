@@ -48,9 +48,10 @@ help:
 	@printf "$(CYAN)└──────────────────────────────────────────────────────────────────────────────┘\n$(RESET)"
 
 install:
-	@printf "$(BOLD)$(BLUE)📦 [INSTALL] Installing project dependencies...$(RESET)\n"
+	@printf "$(BOLD)$(BLUE)📦 [INSTALL] Installing project dependencies and configuring git hooks...$(RESET)\n"
 	@$(PYTHON) -m pip install -e ".[dev]"
-	@printf "$(GREEN)✔ Dependencies installed successfully!$(RESET)\n"
+	@bash scripts/install-hooks.sh
+	@printf "$(GREEN)✔ Dependencies installed and Git hooks configured successfully!$(RESET)\n"
 
 describe:
 	@printf "$(BOLD)$(BLUE)📊 [DATA ANALYSIS] Running describe.py...$(RESET)\n"
