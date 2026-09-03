@@ -179,6 +179,17 @@ def _build_markdown(
         row = f"| `{p['filename']}` | `{p['cli']}` | " f"{p['status']} | {p['size']} | {desc} |"
         md.append(row)
 
+    generated_plots = [p for p in plots if p["status"] == "✅ Generated"]
+    if generated_plots:
+        md.append("\n### 🖼️ Rendered Visual Artifacts (GitHub Pages CDN)\n")
+        for p in generated_plots:
+            img_url = f"https://rogeriols.github.io/Dslr-42sp/plots/{p['filename']}"
+            md.append(f"<details open><summary><b>📊 {p['filename']} Preview</b></summary>\n")
+            md.append(
+                f'<p align="center"><img src="{img_url}" alt="{p["filename"]}" width="90%"></p>\n'
+            )
+            md.append("</details>\n")
+
     md.extend(
         [
             "\n## 🔍 Audit Details\n",
