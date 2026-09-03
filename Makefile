@@ -20,14 +20,15 @@ MAGENTA := \033[35m
 BLUE    := \033[34m
 WHITE   := \033[97m
 
-.PHONY: help install describe histogram scatter pairplot train predict evaluate test norm compile audit summary check pre-commit clean
+.PHONY: help install onboarding describe histogram scatter pairplot train predict evaluate test norm compile audit summary check pre-commit clean
 
 help:
 	@printf "$(CYAN)┌──────────────────────────────────────────────────────────────────────────────┐\n$(RESET)"
 	@printf "$(CYAN)│$(RESET) $(BOLD)$(MAGENTA)                 42 DSLR — DATA SCIENCE COMMAND CENTER                      $(RESET) $(CYAN)│\n$(RESET)"
 	@printf "$(CYAN)├──────────────────────────────────────────────────────────────────────────────┤\n$(RESET)"
 	@printf "$(CYAN)│$(RESET)  $(BOLD)$(GREEN)make help$(RESET)       $(DIM)─$(RESET) Show this interactive help menu                           $(CYAN)│\n$(RESET)"
-	@printf "$(CYAN)│$(RESET)  $(BOLD)$(GREEN)make install$(RESET)    $(DIM)─$(RESET) Install dependencies in local virtualenv / system         $(CYAN)│\n$(RESET)"
+	@printf "$(CYAN)│$(RESET)  $(BOLD)$(GREEN)make onboarding$(RESET) $(DIM)─$(RESET) Show best practices & Git governance banner               $(CYAN)│\n$(RESET)"
+	@printf "$(CYAN)│$(RESET)  $(BOLD)$(GREEN)make install$(RESET)    $(DIM)─$(RESET) Install dependencies and configure git hooks               $(CYAN)│\n$(RESET)"
 	@printf "$(CYAN)│$(RESET)  $(BOLD)$(GREEN)make describe$(RESET)   $(DIM)─$(RESET) Run describe.py on train dataset                          $(CYAN)│\n$(RESET)"
 	@printf "$(CYAN)│$(RESET)  $(BOLD)$(GREEN)make histogram$(RESET)  $(DIM)─$(RESET) Run histogram.py (Course distribution analysis)           $(CYAN)│\n$(RESET)"
 	@printf "$(CYAN)│$(RESET)  $(BOLD)$(GREEN)make scatter$(RESET)    $(DIM)─$(RESET) Run scatter_plot.py (Feature correlation analysis)        $(CYAN)│\n$(RESET)"
@@ -46,6 +47,9 @@ help:
 	@printf "$(CYAN)├──────────────────────────────────────────────────────────────────────────────┤\n$(RESET)"
 	@printf "$(CYAN)│$(RESET)           $(BOLD)$(WHITE)🔥 Crafted with • by $(YELLOW)@RogerioLS$(WHITE) $(DIM)•$(RESET) $(BOLD)$(CYAN)42 São Paulo 🇧🇷$(RESET)                  $(CYAN)│\n$(RESET)"
 	@printf "$(CYAN)└──────────────────────────────────────────────────────────────────────────────┘\n$(RESET)"
+
+onboarding:
+	@bash scripts/install-hooks.sh --banner-only
 
 install:
 	@printf "$(BOLD)$(BLUE)📦 [INSTALL] Installing project dependencies and configuring git hooks...$(RESET)\n"
