@@ -13,6 +13,10 @@ To adhere strictly to 42's no-cheating policy, all statistics are implemented wi
   $$\text{index} = (N - 1) \cdot p$$
   Let $i = \lfloor \text{index} \rfloor$ and $f = \text{index} - i$:
   $$\text{Percentile}(p) = X[i] + f \cdot (X[i+1] - X[i])$$
+- **Sample Covariance**:
+  $$\text{cov}(X, Y) = \frac{1}{N - 1} \sum_{i=1}^N (x_i - \mu_X)(y_i - \mu_Y)$$
+- **Pearson Correlation Coefficient**:
+  $$r_{XY} = \frac{\text{cov}(X, Y)}{\sigma_X \sigma_Y} = \frac{\sum_{i=1}^N (x_i - \mu_X)(y_i - \mu_Y)}{\sqrt{\sum_{i=1}^N (x_i - \mu_X)^2} \sqrt{\sum_{i=1}^N (y_i - \mu_Y)^2}}$$
 
 ---
 

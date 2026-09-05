@@ -110,3 +110,46 @@ def extract_valid_feature_values(df: pd.DataFrame, feature_name: str) -> list[fl
                 continue
 
     return valid_values
+
+
+def extract_paired_feature_values(
+    df: pd.DataFrame, feat_a: str, feat_b: str
+) -> tuple[list[float], list[float]]:
+    """Extracts paired non-NaN numerical values for two features.
+
+    Only rows where both features contain valid non-null numerical values
+    are included, preserving observation alignment for bivariate analysis.
+
+    Args:
+        df (pd.DataFrame): Dataset DataFrame.
+        feat_a (str): Name of first feature column.
+        feat_b (str): Name of second feature column.
+
+    Returns:
+        tuple[list[float], list[float]]: Two parallel lists of valid paired floats.
+
+    Raises:
+        KeyError: If either feature is not present in the DataFrame.
+    """
+    if feat_a not in df.columns:
+        raise KeyError(f"Feature '{feat_a}' not found in dataset columns.")
+    if feat_b not in df.columns:
+        raise KeyError(f"Feature '{feat_b}' not found in dataset columns.")
+
+    series_a = df[feat_a]
+    series_b = df[feat_b]
+
+    paired_a: list[float] = []
+    paired_b: list[float] = []
+
+    for val_a, val_b in zip(series_a, series_b):
+        if pd.notna(val_a) and pd.notna(val_b):
+            try:
+                f_a = float(val_a)
+                f_b = float(val_b)
+                paired_a.append(f_a)
+                paired_b.append(f_b)
+            except (ValueError, TypeError):
+                continue
+
+    return paired_a, paired_b

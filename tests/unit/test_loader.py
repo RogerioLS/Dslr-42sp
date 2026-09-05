@@ -7,6 +7,7 @@ import pandas as pd
 
 from src.analytics.loader import (
     HOGWARTS_COURSES,
+    extract_paired_feature_values,
     extract_valid_feature_values,
     get_numerical_features,
     load_csv,
@@ -64,6 +65,21 @@ class TestDataLoader(unittest.TestCase):
         """Verifies that extract_valid_feature_values raises KeyError for invalid column."""
         with self.assertRaises(KeyError):
             extract_valid_feature_values(self.sample_df, "InvalidCourse")
+
+    def test_extract_paired_feature_values(self) -> None:
+        """Verifies that extract_paired_feature_values returns paired non-null values."""
+        # Row 0: Arithmancy=10, Astronomy=-50 (both valid)
+        # Row 1: Arithmancy=None (skip)
+        # Row 2: Astronomy=None (skip)
+        # Row 3: Arithmancy=40, Astronomy=10 (both valid)
+        paired_a, paired_b = extract_paired_feature_values(
+            self.sample_df, "Arithmancy", "Astronomy"
+        )
+        self.assertEqual(paired_a, [10.0, 40.0])
+        self.assertEqual(paired_b, [-50.0, 10.0])
+
+        with self.assertRaises(KeyError):
+            extract_paired_feature_values(self.sample_df, "Arithmancy", "NonExistent")
 
     def test_hogwarts_courses_constant(self) -> None:
         """Verifies that HOGWARTS_COURSES contains all 13 expected courses."""

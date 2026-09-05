@@ -13,9 +13,11 @@ import pandas as pd
 from src.analytics.loader import extract_valid_feature_values, get_numerical_features, load_csv
 from src.analytics.statistics import (
     compute_count,
+    compute_covariance,
     compute_max,
     compute_mean,
     compute_min,
+    compute_pearson_correlation,
     compute_percentile,
     compute_stats_summary,
     compute_std,
@@ -146,6 +148,47 @@ class TestStatisticsMath(unittest.TestCase):
                 compute_percentile(values, 0.75), float(series.quantile(0.75)), places=5
             )
             self.assertAlmostEqual(compute_max(values), float(series.max()), places=5)
+
+    def test_compute_covariance(self) -> None:
+        """Verifies compute_covariance against pandas sample covariance."""
+        x = [1.0, 2.0, 3.0, 4.0, 5.0]
+        y = [2.0, 4.0, 5.0, 4.0, 5.0]
+        expected_cov = float(pd.Series(x).cov(pd.Series(y)))
+        self.assertAlmostEqual(compute_covariance(x, y), expected_cov, places=7)
+
+    def test_compute_pearson_correlation(self) -> None:
+        """Verifies compute_pearson_correlation against pandas and perfect bounds."""
+        x = [1.0, 2.0, 3.0, 4.0, 5.0]
+        y = [2.0, 4.0, 6.0, 8.0, 10.0]
+        # Perfect positive correlation
+        self.assertAlmostEqual(compute_pearson_correlation(x, y), 1.0, places=7)
+
+        # Perfect negative correlation
+        y_neg = [-2.0, -4.0, -6.0, -8.0, -10.0]
+        self.assertAlmostEqual(compute_pearson_correlation(x, y_neg), -1.0, places=7)
+
+        # Arbitrary sequence compared with pandas
+        z = [5.0, 1.0, 9.0, 3.0, 7.0]
+        expected_r = float(pd.Series(x).corr(pd.Series(z)))
+        self.assertAlmostEqual(compute_pearson_correlation(x, z), expected_r, places=7)
+
+    def test_covariance_and_correlation_exceptions(self) -> None:
+        """Verifies covariance and correlation exception handling for edge cases."""
+        with self.assertRaises(ValueError):
+            compute_covariance([1.0, 2.0], [1.0])
+        with self.assertRaises(ValueError):
+            compute_covariance([1.0], [1.0])
+        with self.assertRaises(ValueError):
+            compute_pearson_correlation([1.0, 1.0, 1.0], [2.0, 3.0, 4.0])
+
+    def test_dataset_train_astronomy_defense_collinearity(self) -> None:
+        """Verifies Astronomy and Defense Against the Dark Arts have perfect r = -1.0."""
+        from src.analytics.loader import extract_paired_feature_values
+
+        df = load_csv(self.train_dataset_path)
+        x, y = extract_paired_feature_values(df, "Astronomy", "Defense Against the Dark Arts")
+        r = compute_pearson_correlation(x, y)
+        self.assertAlmostEqual(r, -1.0, places=5)
 
 
 if __name__ == "__main__":
