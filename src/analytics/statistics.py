@@ -190,3 +190,69 @@ def compute_stats_summary(values: Sequence[float]) -> Dict[str, float]:
         "75%": compute_percentile(values, 0.75),
         "Max": compute_max(values),
     }
+
+
+def compute_covariance(x: Sequence[float], y: Sequence[float]) -> float:
+    """Computes sample covariance between two paired numerical sequences.
+
+    Formula:
+        cov(x, y) = (1 / (N - 1)) * sum((x_i - mu_x) * (y_i - mu_y))
+
+    Args:
+        x (Sequence[float]): First numerical sequence.
+        y (Sequence[float]): Second numerical sequence (must match length of x).
+
+    Returns:
+        float: Sample covariance between x and y.
+
+    Raises:
+        ValueError: If lengths do not match or sample size is fewer than 2.
+    """
+    n = compute_count(x)
+    n_y = compute_count(y)
+    if n != n_y:
+        raise ValueError(f"Sequences must have identical length: {n} vs {n_y}.")
+    if n < 2:
+        raise ValueError("Covariance requires at least 2 paired observations.")
+
+    mu_x = compute_mean(x)
+    mu_y = compute_mean(y)
+
+    sum_prod_diff = 0.0
+    for xi, yi in zip(x, y):
+        sum_prod_diff += (float(xi) - mu_x) * (float(yi) - mu_y)
+
+    return sum_prod_diff / (n - 1)
+
+
+def compute_pearson_correlation(x: Sequence[float], y: Sequence[float]) -> float:
+    """Computes Pearson correlation coefficient (r) between two sequences.
+
+    Formula:
+        r = cov(x, y) / (std_x * std_y)
+
+    Args:
+        x (Sequence[float]): First numerical sequence.
+        y (Sequence[float]): Second numerical sequence.
+
+    Returns:
+        float: Pearson correlation coefficient in range [-1.0, 1.0].
+
+    Raises:
+        ValueError: If sample size < 2 or either variable has zero variance.
+    """
+    std_x = compute_std(x)
+    std_y = compute_std(y)
+
+    if std_x == 0.0 or std_y == 0.0:
+        raise ValueError("Cannot compute correlation for variables with zero variance.")
+
+    cov = compute_covariance(x, y)
+    r = cov / (std_x * std_y)
+
+    # Clamp potential floating point rounding artifacts
+    if r > 1.0:
+        return 1.0
+    if r < -1.0:
+        return -1.0
+    return r
