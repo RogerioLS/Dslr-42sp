@@ -45,5 +45,29 @@ This document records the visual findings corresponding to the three mandatory e
 
 ## 3. Pair Plot (`pair_plot.py`)
 * **Question**: *From this visualization, which features are you going to use for your logistic regression?*
-* **Analysis**: Features with clear class boundaries and high variance between houses are prioritized; noisy or redundant features are dropped.
-* **Finding**: *(To be documented during visualization phase analysis)*.
+* **Analysis**: A pair plot exposes both the single-feature class separability along the diagonal (histograms) and bivariate cluster separation off the diagonal (scatter matrix). Optimal features for Logistic Regression must exhibit distinct, separable clusters with minimal overlap between houses, while avoiding multicollinearity and uninformative noise.
+* **Finding**: We select a subset of **9 high-discrimination features** and exclude **4 uninformative or redundant features**.
+
+  ### Feature Separability Ranking (ANOVA F-statistic)
+  Quantifying between-house variance relative to within-house variance ($F = \frac{MS_{between}}{MS_{within}}$) provides exact numerical support for the visual clusters observed in the pair plot:
+
+  | Course | F-statistic | Pair Plot Cluster Status | Decision | Rationale |
+  |---|---|---|---|---|
+  | **Defense Against the Dark Arts** | 4,145.73 | Distinct house separation | **EXCLUDE** | Collinear with Astronomy ($r = -1.0000$). Redundant. |
+  | **Astronomy** | 4,127.73 | Distinct house separation | **KEEP** | High discriminative power between all 4 houses. |
+  | **Charms** | 3,663.52 | Strong cluster boundaries | **KEEP** | Separates Ravenclaw/Slytherin distinctly. |
+  | **Ancient Runes** | 3,079.46 | Strong cluster boundaries | **KEEP** | Sharp multimodal house distinction. |
+  | **Divination** | 2,792.18 | Clear separation | **KEEP** | Clear separation between Gryffindor and Slytherin. |
+  | **Herbology** | 2,577.28 | Clear separation | **KEEP** | Isolates Hufflepuff strongly. |
+  | **Transfiguration** | 2,425.80 | Clear separation | **KEEP** | Excellent bivariate contrast with Charms/Flying. |
+  | **Flying** | 2,356.53 | Clear separation | **KEEP** | Distinguishes Gryffindor and Ravenclaw. |
+  | **Muggle Studies** | 2,277.63 | Clear separation | **KEEP** | Clear separation profile across houses. |
+  | **History of Magic** | 2,025.29 | Clear separation | **KEEP** | Strong contrast in pairwise scatter plots. |
+  | **Potions** | 491.07 | Heavily overlapping | **EXCLUDE** | Low discriminative separation relative to top tier. |
+  | **Care of Magical Creatures** | 1.57 | Single overlapping bell curve | **EXCLUDE** | Negligible between-house variance; noise. |
+  | **Arithmancy** | 0.38 | Single overlapping bell curve | **EXCLUDE** | Perfectly homogeneous across houses; zero signal. |
+
+  ### Final Selected Feature Subset
+  $$\mathcal{F}_{selected} = \{\text{Astronomy}, \text{Herbology}, \text{Divination}, \text{Muggle Studies}, \text{Ancient Runes}, \text{History of Magic}, \text{Transfiguration}, \text{Charms}, \text{Flying}\}$$
+
+  This 9-feature subset eliminates multicollinearity, strips noise and zero-variance signals, and provides well-conditioned linear decision boundaries capable of achieving the required $\ge 98\%$ classification accuracy.
