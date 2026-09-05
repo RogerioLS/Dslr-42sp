@@ -25,8 +25,23 @@ This document records the visual findings corresponding to the three mandatory e
 
 ## 2. Scatter Plot (`scatter_plot.py`)
 * **Question**: *What are the two features that are similar?*
-* **Analysis**: Finding collinear features (Pearson correlation $\approx 1.0$ or $-1.0$) prevents redundancy in our linear model weights.
-* **Finding**: *(To be documented during visualization phase analysis)*.
+* **Analysis**: Finding collinear features (Pearson correlation $|r| \approx 1.0$) prevents redundancy and multicollinearity in our linear model weights.
+* **Finding**: **Astronomy** and **Defense Against the Dark Arts** are the two similar features.
+  Across all $\binom{13}{2} = 78$ pairs of Hogwarts courses, they exhibit a **perfect negative linear correlation** ($r = -1.000000$, $|r| = 1.000000$).
+  Inspection of raw values reveals an exact functional relationship:
+  $$\text{Defense Against the Dark Arts} = -0.01 \times \text{Astronomy}$$
+
+  Top 5 absolute correlations across all courses:
+
+  | Feature 1 | Feature 2 | Pearson $r$ | $\|r\|$ |
+  |---|---|---|---|
+  | **Astronomy** | **Defense Against the Dark Arts** | **-1.000000** | **1.000000** |
+  | History of Magic | Flying | -0.896283 | 0.896283 |
+  | Transfiguration | Flying | -0.873673 | 0.873673 |
+  | History of Magic | Transfiguration | +0.849203 | 0.849203 |
+  | Muggle Studies | Charms | +0.847607 | 0.847607 |
+
+  **ML Modeling Takeaway**: Including both *Astronomy* and *Defense Against the Dark Arts* in Logistic Regression would add strict multicollinearity without introducing new variance or predictive signal. One of the two must be dropped during feature selection.
 
 ## 3. Pair Plot (`pair_plot.py`)
 * **Question**: *From this visualization, which features are you going to use for your logistic regression?*
