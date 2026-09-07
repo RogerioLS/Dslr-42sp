@@ -11,6 +11,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.0] - 2026-09-07 — 02. Data Visualization & Feature Analysis
+
+### ✨ Features & Algorithms
+- **[DSLR-07] Multivariate Matrix: Pair Plot and Feature Selection** ([#7](https://github.com/RogerioLS/Dslr-42sp/issues/7)) by @RogerioLS
+  - Implemented multivariate scatter plot matrix with diagonal histograms in `pair_plot.py`.
+  - Filtered 9 features for logistic regression model and documented ANOVA ranking rationale.
+- **[DSLR-06] Bivariate Analysis: Correlated Features Identification (Scatter Plot)** ([#6](https://github.com/RogerioLS/Dslr-42sp/issues/6)) by @RogerioLS
+  - Handcrafted Pearson correlation coefficient and covariance from first principles.
+  - Discovered perfect inverse collinearity ($r = -1.0$) between *Astronomy* and *Defense Against the Dark Arts*.
+- **[DSLR-05] Histogram Analysis: Homogeneous Course Score Distribution** ([#5](https://github.com/RogerioLS/Dslr-42sp/issues/5)) by @RogerioLS
+  - Handcrafted multi-house score distribution plots with official house color palettes.
+  - Answered Question 1: *Arithmancy* is homogeneous across all four Hogwarts houses.
+
+---
+
 ## [0.1.0] - 2026-09-01 — 01. Data Exploration & Handcrafted Stats
 
 ### ✨ Features & Algorithms

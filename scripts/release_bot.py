@@ -96,14 +96,32 @@ def get_current_repo() -> str:
     if repo:
         return repo
 
-    result = subprocess.run(
-        ["gh", "repo", "view", "--json", "nameWithOwner", "-q", ".nameWithOwner"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    if result.returncode == 0 and result.stdout.strip():
-        return result.stdout.strip()
+    try:
+        result = subprocess.run(
+            ["gh", "repo", "view", "--json", "nameWithOwner", "-q", ".nameWithOwner"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            return result.stdout.strip()
+    except FileNotFoundError:
+        pass
+
+    try:
+        rem_res = subprocess.run(
+            ["git", "config", "--get", "remote.origin.url"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if rem_res.returncode == 0 and rem_res.stdout.strip():
+            match = re.search(r"github\.com[:/]([^/]+/[^/]+?)(?:\.git)?$", rem_res.stdout.strip())
+            if match:
+                return match.group(1)
+    except Exception:
+        pass
+
     return "RogerioLS/Dslr-42sp"
 
 
@@ -333,7 +351,47 @@ def commit_and_create_release(
     subprocess.run(["git", "add", "CHANGELOG.md"], check=True)
     commit_msg = f"chore(release): [RELEASE] publish release {version} for {milestone_title}"
     subprocess.run(["git", "commit", "-m", commit_msg], check=False)
-    subprocess.run(["git", "push", "origin", "main"], check=False)
+
+    token = os.environ.get("GITHUB_TOKEN")
+    env = os.environ.copy()
+    if token:
+        env["GH_TOKEN"] = token
+
+    push_res = subprocess.run(
+        ["git", "push", "origin", "main"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if push_res.returncode != 0:
+        print("⚠️ Direct push to main rejected (protected branch). Opening PR branch...")
+        tag_slug = version.lower().replace(".", "-")
+        branch_name = f"chore/release-{tag_slug}-changelog"
+        subprocess.run(["git", "checkout", "-b", branch_name], check=False)
+        subprocess.run(["git", "push", "-u", "origin", branch_name], check=False)
+
+        pr_cmd = [
+            "gh",
+            "pr",
+            "create",
+            "--title",
+            commit_msg,
+            "--body",
+            (
+                f"### 🚀 Automated Release Changelog\n\n"
+                f"Automated release notes for **{milestone_title}** ({version}).\n\n"
+                f"Closes release cycle for {version}."
+            ),
+            "--head",
+            branch_name,
+            "--base",
+            "main",
+        ]
+        pr_res = subprocess.run(pr_cmd, capture_output=True, text=True, env=env, check=False)
+        if pr_res.returncode == 0:
+            print(f"🎉 Pull Request criado com sucesso: {pr_res.stdout.strip()}")
+        else:
+            print(f"⚠️ Aviso ao abrir PR para changelog: {pr_res.stderr.strip()}", file=sys.stderr)
 
     # Create GitHub Release
     release_cmd = [
@@ -346,10 +404,6 @@ def commit_and_create_release(
         "--notes",
         release_notes,
     ]
-    token = os.environ.get("GITHUB_TOKEN")
-    env = os.environ.copy()
-    if token:
-        env["GH_TOKEN"] = token
 
     result = subprocess.run(release_cmd, capture_output=True, text=True, env=env, check=False)
     if result.returncode == 0:

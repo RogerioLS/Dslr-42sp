@@ -10,6 +10,7 @@ and closes the Issue via GitHub REST API.
 import json
 import os
 import re
+import subprocess
 import urllib.request
 from pathlib import Path
 from typing import Optional
@@ -19,21 +20,39 @@ METRICS_PATH = BASE_DIR / "artifacts" / "audit_summary.json"
 
 
 def _extract_issue_number(event_data: dict) -> Optional[int]:
-    """Extracts issue number from PR title, body, or commit messages."""
+    """Extracts issue number from PR title, body, branch name, or git log."""
     search_texts: list[str] = []
 
     if "pull_request" in event_data:
         pr = event_data["pull_request"]
         search_texts.append(pr.get("title", ""))
         search_texts.append(pr.get("body", "") or "")
+        search_texts.append(pr.get("head", {}).get("ref", ""))
 
     if "commits" in event_data:
         for commit in event_data["commits"]:
             search_texts.append(commit.get("message", ""))
 
+    if "head_commit" in event_data:
+        search_texts.append(event_data["head_commit"].get("message", ""))
+
+    try:
+        git_log = subprocess.run(
+            ["git", "log", "-n", "10", "--oneline"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if git_log.stdout:
+            search_texts.append(git_log.stdout)
+    except Exception:
+        pass
+
     patterns = [
         r"\[[a-zA-Z0-9_-]+:#([0-9]+)\]",
         r"(?:Closes|Close|Fixes|Fix|Resolves|Resolve)\s+#([0-9]+)",
+        r"(?:feat|fix|test|docs|refactor|chore)/dslr-0*([0-9]+)",
+        r"dslr-0*([0-9]+)",
     ]
 
     for text in search_texts:
