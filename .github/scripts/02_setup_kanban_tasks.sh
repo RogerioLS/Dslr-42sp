@@ -87,43 +87,43 @@ create_issue_if_missing \
   "area: visualization,type: implementation,priority: high" \
   "$ISSUES_DIR/dslr-07-pair-plot.md"
 
-# --- MILESTONE 3: Logistic Regression & Classification Engine ---
+# --- MILESTONE 3: Logistic Regression Engine & Math ---
 
 create_issue_if_missing \
   "[DSLR-08] Preprocessing: StandardScaler Artesanal e Imputação Numérica" \
-  "03. Logistic Regression & Classification Engine" \
+  "03. Logistic Regression Engine & Math" \
   "area: model,type: implementation,priority: high" \
   "$ISSUES_DIR/dslr-08-preprocessing-scaler.md"
 
 create_issue_if_missing \
   "[DSLR-09] Core Math: Sigmoide, Log-Loss e Gradiente Logístico" \
-  "03. Logistic Regression & Classification Engine" \
+  "03. Logistic Regression Engine & Math" \
   "area: model,type: math-heavy,type: implementation,priority: high" \
   "$ISSUES_DIR/dslr-09-core-math-logistic.md"
 
 create_issue_if_missing \
   "[DSLR-10] Training Engine: One-vs-Rest e CLI logreg_train.py" \
-  "03. Logistic Regression & Classification Engine" \
+  "03. Logistic Regression Engine & Math" \
   "area: model,type: implementation,priority: high" \
   "$ISSUES_DIR/dslr-10-training-engine.md"
 
 create_issue_if_missing \
   "[DSLR-11] Inference Engine: Classificador Final e CLI logreg_predict.py" \
-  "03. Logistic Regression & Classification Engine" \
+  "03. Logistic Regression Engine & Math" \
   "area: model,type: implementation,priority: high" \
   "$ISSUES_DIR/dslr-11-inference-engine.md"
 
-# --- MILESTONE 4: Bonuses, Accuracy & Peer Defense ---
+# --- MILESTONE 4: Defense Readiness & Bonuses ---
 
 create_issue_if_missing \
   "[DSLR-12] Bonus: Algoritmos Otimizadores Extras (SGD / Mini-batch / Early Stopping)" \
-  "04. Bonuses, Accuracy & Peer Defense" \
+  "04. Defense Readiness & Bonuses" \
   "area: model,type: bonus,priority: medium" \
   "$ISSUES_DIR/dslr-12-bonuses.md"
 
 create_issue_if_missing \
   "[DSLR-13] Peer Defense: Validação de Acurácia >= 98% e Checklist de Avaliação" \
-  "04. Bonuses, Accuracy & Peer Defense" \
+  "04. Defense Readiness & Bonuses" \
   "area: defense,type: defense,priority: high" \
   "$ISSUES_DIR/dslr-13-peer-defense.md"
 
