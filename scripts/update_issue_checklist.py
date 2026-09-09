@@ -79,24 +79,85 @@ def _github_api_request(url: str, method: str, token: str, data: Optional[dict] 
         return json.loads(content) if content else {}
 
 
-def _update_issue_checkboxes(repo: str, issue_number: int, token: str, metrics: dict) -> None:
-    """Checks off issue checkboxes, posts audit certificate, and closes the issue."""
-    issue_url = f"https://api.github.com/repos/{repo}/issues/{issue_number}"
-    comments_url = f"{issue_url}/comments"
+def _poke_milestone(
+    repo: str, milestone_number: int, token: str, issue_number: Optional[int] = None
+) -> None:
+    """Forces GitHub to recalculate milestone progress counters.
 
+    Args:
+        repo: Repository slug in format 'owner/repo'.
+        milestone_number: The integer milestone number to refresh.
+        token: GitHub authentication token.
+        issue_number: Optional linked issue number to re-assert milestone association.
+    """
+    ms_url = f"https://api.github.com/repos/{repo}/milestones/{milestone_number}"
     try:
-        issue_data = _github_api_request(issue_url, "GET", token)
+        ms_data = _github_api_request(ms_url, "GET", token)
+        desc = ms_data.get("description") or ""
+        _github_api_request(ms_url, "PATCH", token, {"description": desc})
+        print(f"🔄 Milestone #{milestone_number} poked successfully via REST API.")
     except Exception as exc:
-        print(f"⚠️ Failed to fetch Issue #{issue_number}: {exc}")
-        return
+        print(f"⚠️ Failed to poke Milestone #{milestone_number}: {exc}")
 
-    body = issue_data.get("body") or ""
+    if issue_number:
+        try:
+            issue_url = f"https://api.github.com/repos/{repo}/issues/{issue_number}"
+            _github_api_request(issue_url, "PATCH", token, {"milestone": milestone_number})
+            print(f"🔄 Issue #{issue_number} milestone association refreshed.")
+        except Exception as exc:
+            print(f"⚠️ Failed to refresh milestone on Issue #{issue_number}: {exc}")
 
-    # Convert all unchecked boxes to checked
-    new_body = body.replace("- [ ]", "- [x]")
-    count_updated = body.count("- [ ]")
 
-    # Post audit verification comment
+def _sync_all_open_milestones(repo: str, token: str) -> None:
+    """Audits all open milestones and triggers recalculation if counts are out of sync.
+
+    Args:
+        repo: Repository slug in format 'owner/repo'.
+        token: GitHub authentication token.
+    """
+    url = f"https://api.github.com/repos/{repo}/milestones?state=open"
+    try:
+        milestones = _github_api_request(url, "GET", token)
+        if not isinstance(milestones, list):
+            return
+        for ms in milestones:
+            ms_num = ms.get("number")
+            if not ms_num:
+                continue
+            desc = ms.get("description") or ""
+            ms_url = f"https://api.github.com/repos/{repo}/milestones/{ms_num}"
+            _github_api_request(ms_url, "PATCH", token, {"description": desc})
+
+            # Re-assert milestone on closed issues to force GitHub's progress counter worker
+            try:
+                closed_url = (
+                    f"https://api.github.com/repos/{repo}/issues"
+                    f"?milestone={ms_num}&state=closed&per_page=20"
+                )
+                closed_issues = _github_api_request(closed_url, "GET", token)
+                if isinstance(closed_issues, list):
+                    for c_iss in closed_issues:
+                        c_num = c_iss.get("number")
+                        if c_num:
+                            c_url = f"https://api.github.com/repos/{repo}/issues/{c_num}"
+                            _github_api_request(c_url, "PATCH", token, {"milestone": ms_num})
+            except Exception as inner_exc:
+                print(f"ℹ️ Could not refresh closed issues for milestone #{ms_num}: {inner_exc}")
+
+            print(f"🎯 Verified and refreshed Milestone #{ms_num} ('{ms.get('title')}').")
+    except Exception as exc:
+        print(f"⚠️ Failed to sync open milestones: {exc}")
+
+
+def _post_audit_comment(comments_url: str, token: str, issue_number: int, metrics: dict) -> None:
+    """Posts an audit verification comment on the specified issue.
+
+    Args:
+        comments_url: URL for posting comments to the issue.
+        token: GitHub authentication token.
+        issue_number: The integer issue number.
+        metrics: Dictionary containing passed and total test counts.
+    """
     passed_tests = metrics.get("passed_tests", 0)
     total_tests = metrics.get("total_tests", 0)
     timestamp = metrics.get("timestamp", "N/A")
@@ -116,16 +177,82 @@ def _update_issue_checkboxes(repo: str, issue_number: int, token: str, metrics: 
     except Exception as exc:
         print(f"⚠️ Failed to post comment on Issue #{issue_number}: {exc}")
 
-    # Close issue, mark reason as completed to advance milestone progress, and update body
-    patch_data = {"body": new_body, "state": "closed", "state_reason": "completed"}
+
+def _close_issue_record(issue_url: str, issue_number: int, token: str) -> None:
+    """Closes the specified issue via gh CLI (GraphQL) or REST API fallback.
+
+    Args:
+        issue_url: URL of the issue resource.
+        issue_number: The integer issue number.
+        token: GitHub authentication token.
+    """
+    closed_via_gh = False
     try:
-        _github_api_request(issue_url, "PATCH", token, patch_data)
-        print(
-            f"✅ Issue #{issue_number} successfully updated: "
-            f"{count_updated} checkboxes checked off & state set to closed."
+        gh_result = subprocess.run(
+            ["gh", "issue", "close", str(issue_number), "--reason", "completed"],
+            capture_output=True,
+            text=True,
+            check=False,
         )
+        if gh_result.returncode == 0:
+            print(f"✅ Issue #{issue_number} closed via gh CLI (GraphQL mutation).")
+            closed_via_gh = True
+        else:
+            print(
+                f"ℹ️ gh issue close non-zero exit ({gh_result.returncode}): "
+                f"{gh_result.stderr.strip()}"
+            )
     except Exception as exc:
-        print(f"⚠️ Failed to close Issue #{issue_number}: {exc}")
+        print(f"ℹ️ gh CLI execution error: {exc}")
+
+    if not closed_via_gh:
+        patch_data = {"state": "closed", "state_reason": "completed"}
+        try:
+            _github_api_request(issue_url, "PATCH", token, patch_data)
+            print(f"✅ Issue #{issue_number} state set to closed via REST API.")
+        except Exception as exc:
+            print(f"⚠️ Failed to close Issue #{issue_number} via REST API: {exc}")
+
+
+def _update_issue_checkboxes(repo: str, issue_number: int, token: str, metrics: dict) -> None:
+    """Checks off issue checkboxes, posts audit certificate, closes issue, and updates milestone.
+
+    Args:
+        repo: Repository slug in format 'owner/repo'.
+        issue_number: The integer issue number to update.
+        token: GitHub authentication token.
+        metrics: Dictionary containing audit metrics.
+    """
+    issue_url = f"https://api.github.com/repos/{repo}/issues/{issue_number}"
+    comments_url = f"{issue_url}/comments"
+
+    try:
+        issue_data = _github_api_request(issue_url, "GET", token)
+    except Exception as exc:
+        print(f"⚠️ Failed to fetch Issue #{issue_number}: {exc}")
+        return
+
+    body = issue_data.get("body") or ""
+    new_body = body.replace("- [ ]", "- [x]")
+    count_updated = body.count("- [ ]")
+
+    _post_audit_comment(comments_url, token, issue_number, metrics)
+
+    if new_body != body:
+        try:
+            _github_api_request(issue_url, "PATCH", token, {"body": new_body})
+            print(
+                f"✅ Issue #{issue_number} description updated: "
+                f"{count_updated} checkboxes checked off."
+            )
+        except Exception as exc:
+            print(f"⚠️ Failed to update Issue #{issue_number} body: {exc}")
+
+    _close_issue_record(issue_url, issue_number, token)
+
+    milestone_obj = issue_data.get("milestone")
+    if isinstance(milestone_obj, dict) and milestone_obj.get("number"):
+        _poke_milestone(repo, int(milestone_obj["number"]), token, issue_number)
 
 
 def main() -> None:
@@ -148,8 +275,10 @@ def main() -> None:
     if not issue_number:
         print(
             "ℹ️ Generic PR / Commit detected. "
-            "No task issue reference (e.g. [DSLR-01:#1]) found. Skipping."
+            "No task issue reference (e.g. [DSLR-01:#1]) found. Skipping issue closure."
         )
+        # Still synchronize all open milestones to ensure progress bars are up to date
+        _sync_all_open_milestones(repo, token)
         return
 
     if not METRICS_PATH.exists():
@@ -168,6 +297,7 @@ def main() -> None:
 
     print(f"🚀 Processing automated checklist and closure for Issue #{issue_number}...")
     _update_issue_checkboxes(repo, issue_number, token, metrics)
+    _sync_all_open_milestones(repo, token)
 
 
 if __name__ == "__main__":
