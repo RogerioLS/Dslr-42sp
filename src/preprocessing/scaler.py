@@ -266,3 +266,42 @@ class StandardScaler:
             return {col_names[j]: [row[j] for row in data] for j in range(num_cols)}
 
         return {}
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Serializes fitted scaler parameters to a dictionary.
+
+        Returns:
+            Dict[str, Any]: Scaler metadata and statistics.
+        """
+        return {
+            "with_mean": self.with_mean,
+            "with_std": self.with_std,
+            "impute_strategy": self.impute_strategy,
+            "mean_": self.mean_,
+            "std_": self.std_,
+            "impute_values_": self.impute_values_,
+            "feature_names_": self.feature_names_,
+            "is_fitted_": self.is_fitted_,
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "StandardScaler":
+        """Reconstructs a fitted StandardScaler from a serialized dictionary.
+
+        Args:
+            data (Dict[str, Any]): Dictionary containing scaler parameters.
+
+        Returns:
+            StandardScaler: Reconstructed scaler instance.
+        """
+        scaler = cls(
+            with_mean=data.get("with_mean", True),
+            with_std=data.get("with_std", True),
+            impute_strategy=data.get("impute_strategy", "mean"),
+        )
+        scaler.mean_ = data.get("mean_", {})
+        scaler.std_ = data.get("std_", {})
+        scaler.impute_values_ = data.get("impute_values_", {})
+        scaler.feature_names_ = data.get("feature_names_", [])
+        scaler.is_fitted_ = data.get("is_fitted_", False)
+        return scaler
