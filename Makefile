@@ -21,7 +21,7 @@ MAGENTA := \033[35m
 BLUE    := \033[34m
 WHITE   := \033[97m
 
-.PHONY: help install onboarding describe histogram scatter pairplot train predict evaluate test norm compile audit summary check pre-commit clean
+.PHONY: help install onboarding describe histogram scatter pairplot train predict evaluate test norm compile audit summary check pre-commit clean pr
 
 help:
 	@printf "$(CYAN)┌──────────────────────────────────────────────────────────────────────────────┐\n$(RESET)"
@@ -45,6 +45,7 @@ help:
 	@printf "$(CYAN)│$(RESET)  $(BOLD)$(GREEN)make check$(RESET)      $(DIM)─$(RESET) Pre-commit sanity check across all project files          $(CYAN)│\n$(RESET)"
 	@printf "$(CYAN)│$(RESET)  $(BOLD)$(GREEN)make pre-commit$(RESET) $(DIM)─$(RESET) Install pre-commit tool and set up git hooks              $(CYAN)│\n$(RESET)"
 	@printf "$(CYAN)│$(RESET)  $(BOLD)$(GREEN)make clean$(RESET)      $(DIM)─$(RESET) Remove temporary cache and prediction files               $(CYAN)│\n$(RESET)"
+	@printf "$(CYAN)│$(RESET)  $(BOLD)$(GREEN)make pr$(RESET)         $(DIM)─$(RESET) Publish automated GitHub Pull Request with Closes #ID      $(CYAN)│\n$(RESET)"
 	@printf "$(CYAN)├──────────────────────────────────────────────────────────────────────────────┤\n$(RESET)"
 	@printf "$(CYAN)│$(RESET)           $(BOLD)$(WHITE)🔥 Crafted with • by $(YELLOW)@RogerioLS$(WHITE) $(DIM)•$(RESET) $(BOLD)$(CYAN)42 São Paulo 🇧🇷$(RESET)                  $(CYAN)│\n$(RESET)"
 	@printf "$(CYAN)└──────────────────────────────────────────────────────────────────────────────┘\n$(RESET)"
@@ -118,6 +119,10 @@ sync-tasks:
 	@printf "$(BOLD)$(CYAN)🔄 [SYNC] Synchronizing GitHub issues to local task files...$(RESET)\n"
 	@$(PYTHON) scripts/sync_tasks.py
 	@printf "$(GREEN)✔ Tasks successfully synchronized!$(RESET)\n"
+
+pr:
+	@printf "$(BOLD)$(CYAN)🚀 [PR] Publishing automated GitHub Pull Request...$(RESET)\n"
+	@$(PYTHON) scripts/create_pr.py
 
 
 
