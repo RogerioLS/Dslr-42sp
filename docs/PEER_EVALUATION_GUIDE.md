@@ -18,6 +18,21 @@
 - [ ] Verify that `weights.json` / `weights.csv` is produced.
 
 ### 4. Prediction & Accuracy (`logreg_predict.py`)
-- [ ] Run `python3 logreg_predict.py datasets/dataset_test.csv weights.json`
-- [ ] Check format of generated `houses.csv` (`Index,Hogwarts House`).
-- [ ] Validate accuracy score $\ge 98.0\%$ via `make evaluate` / `sklearn.metrics.accuracy_score`.
+- [ ] Run `python3 logreg_predict.py datasets/dataset_test.csv weights.json` (or `make predict`).
+- [ ] Verify execution completes without errors and outputs `houses.csv`.
+- [ ] Check format of generated `houses.csv`:
+  ```csv
+  Index,Hogwarts House
+  0,Hufflepuff
+  1,Ravenclaw
+  ...
+  ```
+- [ ] Confirm exact 401 lines (header + 400 test students).
+- [ ] Validate accuracy against ground truth:
+  ```bash
+  python3 scripts/evaluate_accuracy.py houses.csv /path/to/dataset_truth.csv
+  # or using Makefile:
+  make evaluate TRUTH_DATA=/path/to/dataset_truth.csv
+  ```
+- [ ] Confirm accuracy score meets or exceeds the required **98.00%** threshold.
+- [ ] Explain zero data leakage: test set features are scaled using $\mu$ and $\sigma$ learned during training, and missing values impute to $z=0.0$.
