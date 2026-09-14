@@ -62,5 +62,6 @@ Thumbs.db
 
 HANDOFF_PROGRESSO.md
 
-### Generated plot outputs ###
+### Generated plot and prediction outputs ###
 *.png
+houses.csv

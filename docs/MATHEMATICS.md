@@ -34,3 +34,11 @@ $$\frac{\partial J(\theta)}{\partial \theta_j} = \frac{1}{m} \sum_{i=1}^m (h_\th
 ### Feature Standardization (Z-Score)
 To ensure stable and fast gradient descent convergence across features with different scales:
 $$z = \frac{x - \mu}{\sigma}$$
+
+During test inference, we strictly use the sample parameters $\mu_{\text{train}}$ and $\sigma_{\text{train}}$ fitted on the training set to prevent data leakage. Missing values are imputed with $\mu_{\text{train}}$, yielding $z = 0.0$.
+
+### Multiclass Decision Rule (One-vs-Rest Argmax)
+For $K = 4$ classes (Gryffindor, Hufflepuff, Ravenclaw, Slytherin), we train $K$ independent binary classifiers parametrized by weight vectors $\theta_c$. For any test student sample $x$, the predicted class is chosen by maximum posterior probability:
+$$\hat{y} = \arg\max_{c \in \mathcal{C}} P(Y = c \mid x) = \arg\max_{c \in \mathcal{C}} \sigma(\theta_c^T x)$$
+where:
+$$P(Y = c \mid x) = \frac{1}{1 + e^{-\theta_c^T x}}$$
