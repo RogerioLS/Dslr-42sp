@@ -7,6 +7,7 @@ TRAIN_DATA := datasets/dataset_train.csv
 TEST_DATA  := datasets/dataset_test.csv
 WEIGHTS    := weights.json
 PRED_FILE  := houses.csv
+TRUTH_DATA ?= datasets/dataset_truth.csv
 
 # ANSI Color Codes & Formatting
 RESET   := \033[0m
@@ -83,7 +84,7 @@ predict:
 
 evaluate:
 	@printf "$(BOLD)$(BLUE)🎯 [EVALUATION] Checking model accuracy...$(RESET)\n"
-	@$(PYTHON) scripts/evaluate_accuracy.py
+	@$(PYTHON) scripts/evaluate_accuracy.py $(PRED_FILE) $(TRUTH_DATA)
 
 test:
 	@printf "$(BOLD)$(BLUE)🚀 [TESTS] Running all unit test suites...$(RESET)\n"
@@ -138,5 +139,4 @@ clean:
 	@find . -type d -name "*.egg-info" -exec rm -rf {} +
 	@find . -type f -name "*.pyc" -delete
 	@find . -type f -name "houses.csv" -delete
-	@find . -type f -name "weights.json" -delete
 	@printf "$(GREEN)✔ Clean completed successfully.$(RESET)\n\n"

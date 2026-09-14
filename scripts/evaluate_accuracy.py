@@ -51,12 +51,31 @@ def evaluate(predictions_path: str, truth_path: str) -> float:
 
 def main() -> int:
     """Main execution function for evaluate_accuracy."""
-    if len(sys.argv) < 3:
-        print("Usage: python3 scripts/evaluate_accuracy.py <houses.csv> <ground_truth.csv>")
+    if len(sys.argv) < 2:
+        pred_path = "houses.csv"
+        truth_path = "datasets/dataset_truth.csv"
+    elif len(sys.argv) == 2:
+        pred_path = "houses.csv"
+        truth_path = sys.argv[1]
+    else:
+        pred_path = sys.argv[1]
+        truth_path = sys.argv[2]
+
+    from pathlib import Path
+
+    if not Path(pred_path).exists():
+        print(f"❌ Error: Prediction file '{pred_path}' not found.")
+        print("   Run 'make predict' or 'python3 logreg_predict.py' first.")
+        return 1
+
+    if not Path(truth_path).exists():
+        print(f"ℹ️  Notice: Ground truth file '{truth_path}' not found.")
+        print("   Usage: python3 scripts/evaluate_accuracy.py <houses.csv> <ground_truth.csv>")
+        print("   Peer evaluators can run: make evaluate TRUTH_DATA=/path/to/truth.csv")
         return 1
 
     try:
-        acc = evaluate(sys.argv[1], sys.argv[2])
+        acc = evaluate(pred_path, truth_path)
         return 0 if acc >= 0.98 else 1
     except Exception as e:
         print(f"❌ Error during evaluation: {e}")
