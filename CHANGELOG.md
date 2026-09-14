@@ -11,6 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.0] - 2026-09-14 — 03. Logistic Regression Engine & Math
+
+### ✨ Features & Algorithms
+- [DSLR-11] Inference Engine: Predição Multiclasse e houses.csv ([#11](https://github.com/RogerioLS/Dslr-42sp/issues/11)) by @RogerioLS
+- [DSLR-10] Training Engine: One-vs-Rest (OvR) e Batch Gradient Descent ([#10](https://github.com/RogerioLS/Dslr-42sp/issues/10)) by @RogerioLS
+- [DSLR-09] Core Math: Função Sigmoide, Log-Loss e Gradiente Analítico ([#9](https://github.com/RogerioLS/Dslr-42sp/issues/9)) by @RogerioLS
+- [DSLR-08] Preprocessing: Normalização Z-Score (StandardScaler) ([#8](https://github.com/RogerioLS/Dslr-42sp/issues/8)) by @RogerioLS
+---
+
 ## [0.2.0] - 2026-09-07 — 02. Data Visualization & Feature Analysis
 
 ### ✨ Features & Algorithms
