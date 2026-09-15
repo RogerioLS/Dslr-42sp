@@ -200,9 +200,14 @@ def gradient_descent_step(
 
 
 class BinaryLogisticRegression:
-    """Single-class Binary Logistic Regression classifier trained via Batch Gradient Descent.
+    """Single-class Binary Logistic Regression classifier with configurable optimizers.
 
-    Estimates weights theta minimizing Binary Cross-Entropy Loss via analytical gradient.
+    Supports:
+        - 'batch': Batch Gradient Descent (exact gradient over all m samples).
+        - 'sgd': Stochastic Gradient Descent (updates weights per single random observation).
+        - 'minibatch': Mini-Batch Gradient Descent (updates weights over small random batches).
+
+    Estimates weights theta minimizing Binary Cross-Entropy Loss via analytical gradients.
     """
 
     def __init__(
@@ -211,6 +216,9 @@ class BinaryLogisticRegression:
         epochs: int = 1000,
         fit_intercept: bool = True,
         tolerance: float = 1e-7,
+        method: str = "batch",
+        batch_size: int = 32,
+        random_state: Optional[int] = 42,
     ) -> None:
         """Initializes the BinaryLogisticRegression model.
 
@@ -219,16 +227,31 @@ class BinaryLogisticRegression:
             epochs (int): Maximum number of training iterations. Defaults to 1000.
             fit_intercept (bool): If True, automatically prepends a bias column of 1s.
             tolerance (float): Convergence threshold on loss change. Defaults to 1e-7.
+            method (str): Optimization method ('batch', 'sgd', 'minibatch'). Defaults to 'batch'.
+            batch_size (int): Size of batches when method is 'minibatch'. Defaults to 32.
+            random_state (Optional[int]): Random seed for shuffling in SGD/Mini-Batch.
         """
         if learning_rate <= 0.0:
             raise ValueError(f"Learning rate must be positive, got {learning_rate}.")
         if epochs <= 0:
             raise ValueError(f"Epochs must be a positive integer, got {epochs}.")
 
+        valid_methods = {"batch", "sgd", "minibatch"}
+        if method.lower() not in valid_methods:
+            raise ValueError(
+                f"Invalid optimization method '{method}'. Choose from {sorted(valid_methods)}."
+            )
+
+        if method.lower() == "minibatch" and batch_size <= 0:
+            raise ValueError(f"Batch size must be a positive integer, got {batch_size}.")
+
         self.learning_rate = learning_rate
         self.epochs = epochs
         self.fit_intercept = fit_intercept
         self.tolerance = tolerance
+        self.method = method.lower()
+        self.batch_size = 1 if self.method == "sgd" else batch_size
+        self.random_state = random_state
 
         self.weights_: Optional[np.ndarray] = None
         self.loss_history_: List[float] = []
@@ -254,17 +277,39 @@ class BinaryLogisticRegression:
         self.weights_ = np.zeros(d_features, dtype=float)
         self.loss_history_ = []
 
+        rng = np.random.RandomState(self.random_state)
+        indices = np.arange(m_samples)
+
+        effective_batch_size = (
+            1
+            if self.method == "sgd"
+            else (self.batch_size if self.method == "minibatch" else m_samples)
+        )
+
         for epoch in range(self.epochs):
-            y_pred = compute_hypothesis(X_mat, self.weights_)
-            loss = compute_loss(y_vec, y_pred)
+            # Compute full epoch loss for tracking & convergence
+            y_pred_full = compute_hypothesis(X_mat, self.weights_)
+            loss = compute_loss(y_vec, y_pred_full)
             self.loss_history_.append(loss)
 
-            # Check convergence
             if epoch > 0 and abs(self.loss_history_[-2] - loss) < self.tolerance:
                 break
 
-            grad = compute_gradient(X_mat, y_vec, y_pred)
-            self.weights_ = gradient_descent_step(self.weights_, grad, self.learning_rate)
+            if self.method == "batch":
+                grad = compute_gradient(X_mat, y_vec, y_pred_full)
+                self.weights_ = gradient_descent_step(self.weights_, grad, self.learning_rate)
+            else:
+                rng.shuffle(indices)
+                for start_idx in range(0, m_samples, effective_batch_size):
+                    end_idx = min(start_idx + effective_batch_size, m_samples)
+                    batch_idx = indices[start_idx:end_idx]
+
+                    X_batch = X_mat[batch_idx]
+                    y_batch = y_vec[batch_idx]
+                    y_pred_batch = compute_hypothesis(X_batch, self.weights_)
+
+                    grad = compute_gradient(X_batch, y_batch, y_pred_batch)
+                    self.weights_ = gradient_descent_step(self.weights_, grad, self.learning_rate)
 
         self.is_fitted_ = True
         return self
@@ -314,6 +359,9 @@ class BinaryLogisticRegression:
             "epochs": self.epochs,
             "fit_intercept": self.fit_intercept,
             "tolerance": self.tolerance,
+            "method": self.method,
+            "batch_size": self.batch_size,
+            "random_state": self.random_state,
             "is_fitted": self.is_fitted_,
             "weights": self.weights_.tolist() if self.weights_ is not None else None,
             "loss_history": self.loss_history_,
@@ -334,6 +382,9 @@ class BinaryLogisticRegression:
             epochs=data.get("epochs", 1000),
             fit_intercept=data.get("fit_intercept", True),
             tolerance=data.get("tolerance", 1e-7),
+            method=data.get("method", "batch"),
+            batch_size=data.get("batch_size", 32),
+            random_state=data.get("random_state", 42),
         )
         model.is_fitted_ = data.get("is_fitted", False)
         weights_raw = data.get("weights")

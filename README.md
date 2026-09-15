@@ -156,6 +156,20 @@
     <td><code>make predict</code></td>
     <td>Carrega <code>weights.json</code>, aplica scaler e gera <code>houses.csv</code> com as predições finais ($\ge 98\%$ acurácia).</td>
   </tr>
+  <tr></tr>
+  <tr>
+    <td><code>describe.py --bonus</code></td>
+    <td><span style="color: #8957e5;">Bonus</span></td>
+    <td><code>python3 describe.py &lt;dataset&gt; -b</code></td>
+    <td>Exibe métricas estatísticas estendidas: Variância amostral, IQR, Skewness, Kurtosis e contagem de NaNs.</td>
+  </tr>
+  <tr></tr>
+  <tr>
+    <td><code>logreg_train.py --method</code></td>
+    <td><span style="color: #8957e5;">Bonus</span></td>
+    <td><code>python3 logreg_train.py &lt;dataset&gt; -m sgd/minibatch</code></td>
+    <td>Otimizadores alternativos: Stochastic Gradient Descent (SGD) e Mini-Batch GD com batch size configurável.</td>
+  </tr>
 </table>
 
 <table width="100%">

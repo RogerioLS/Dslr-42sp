@@ -133,6 +133,56 @@ class TestCLITrainIntegration(unittest.TestCase):
             for house in payload["classes"]:
                 self.assertEqual(len(payload["weights"][house]), 10)  # 1 bias + 9 features
 
+    def test_cli_train_optimizers_bonus(self) -> None:
+        """Tests training CLI with mini-batch and SGD optimizer flags."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            mb_weights = Path(tmpdir) / "mb_weights.json"
+            sgd_weights = Path(tmpdir) / "sgd_weights.json"
+
+            # Mini-batch run
+            res_mb = subprocess.run(
+                [
+                    sys.executable,
+                    str(CLI_PATH),
+                    str(TRAIN_DATASET),
+                    "--output",
+                    str(mb_weights),
+                    "--method",
+                    "minibatch",
+                    "--batch-size",
+                    "64",
+                    "--epochs",
+                    "20",
+                    "--quiet",
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(res_mb.returncode, 0)
+            self.assertTrue(mb_weights.exists())
+
+            # SGD run
+            res_sgd = subprocess.run(
+                [
+                    sys.executable,
+                    str(CLI_PATH),
+                    str(TRAIN_DATASET),
+                    "--output",
+                    str(sgd_weights),
+                    "--method",
+                    "sgd",
+                    "--epochs",
+                    "10",
+                    "--quiet",
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(res_sgd.returncode, 0)
+            self.assertTrue(sgd_weights.exists())
+
 
 if __name__ == "__main__":
     unittest.main()

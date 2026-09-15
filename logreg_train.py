@@ -49,6 +49,8 @@ def print_training_banner(
     epochs: int,
     learning_rate: float,
     output_path: str,
+    method: str = "batch",
+    batch_size: int = 32,
 ) -> None:
     """Prints the styled training configuration banner to stdout.
 
@@ -58,12 +60,22 @@ def print_training_banner(
         epochs (int): Total training epochs.
         learning_rate (float): Learning rate alpha.
         output_path (str): Destination path for serialized weights.
+        method (str): Optimization method used ('batch', 'sgd', 'minibatch').
+        batch_size (int): Size of batches when method is 'minibatch'.
     """
+    method_labels = {
+        "batch": "Batch Gradient Descent (Exact)",
+        "sgd": "Stochastic Gradient Descent (m=1)",
+        "minibatch": f"Mini-Batch Gradient Descent (Batch size: {batch_size})",
+    }
+    opt_label = method_labels.get(method, method)
+
     print(f"{CYAN}============================================================{RESET}")
     print(f"{BOLD}{MAGENTA} 🧙‍♂️ 42 DSLR — ONE-VS-REST LOGISTIC REGRESSION TRAINING      {RESET}")
     print(f"{CYAN}============================================================{RESET}")
     print(f"{BLUE}• Training Samples  :{RESET} {samples_count}")
     print(f"{BLUE}• Feature Count     :{RESET} {features_count}")
+    print(f"{BLUE}• Optimizer Method  :{RESET} {BOLD}{GREEN}{opt_label}{RESET}")
     print(f"{BLUE}• Learning Rate (α) :{RESET} {learning_rate}")
     print(f"{BLUE}• Training Epochs   :{RESET} {epochs}")
     print(f"{BLUE}• Weights Target    :{RESET} {output_path}")
@@ -97,6 +109,8 @@ def run_training(
     learning_rate: float = 0.5,
     epochs: int = 2000,
     features_mode: str = "all",
+    method: str = "batch",
+    batch_size: int = 32,
     quiet: bool = False,
 ) -> int:
     """Executes the end-to-end model training workflow.
@@ -104,9 +118,11 @@ def run_training(
     Args:
         dataset_path (str): Filepath to the CSV training dataset.
         output_path (str): Output destination path for weights.json.
-        learning_rate (float): Step size for Batch Gradient Descent.
+        learning_rate (float): Step size for Gradient Descent.
         epochs (int): Number of iterations.
         features_mode (str): Feature selection mode ('all' or 'selected').
+        method (str): Optimization method ('batch', 'sgd', 'minibatch').
+        batch_size (int): Size of batches for mini-batch GD.
         quiet (bool): If True, suppresses epoch-by-epoch loss printing.
 
     Returns:
@@ -148,44 +164,50 @@ def run_training(
         return 1
 
     if not quiet:
-        print_training_banner(len(df), len(chosen_features), epochs, learning_rate, output_path)
+        print_training_banner(
+            len(df),
+            len(chosen_features),
+            epochs,
+            learning_rate,
+            output_path,
+            method=method,
+            batch_size=batch_size,
+        )
 
     classifier = OneVsRestLogisticRegression(
         learning_rate=learning_rate,
         epochs=epochs,
+        method=method,
+        batch_size=batch_size,
         features=chosen_features,
     )
 
     cb = None if quiet else progress_callback
 
-    t0 = time.time()
+    start_time = time.time()
     try:
         classifier.fit(df, target_column="Hogwarts House", callback=cb)
     except Exception as err:
-        print(f"Error during training optimization: {err}", file=sys.stderr)
+        print(f"Error during model fitting: {err}", file=sys.stderr)
         return 1
-    t1 = time.time()
+    duration = time.time() - start_time
 
-    # Compute training accuracy
-    predictions = classifier.predict(df)
-    correct_count = (np.array(predictions) == df["Hogwarts House"].values).sum()
-    train_accuracy = (correct_count / len(df)) * 100.0
+    # Evaluate train accuracy
+    y_true = df["Hogwarts House"].dropna().values
+    y_pred = classifier.predict(df.dropna(subset=["Hogwarts House"]))
+    acc = np.mean(y_true == np.array(y_pred)) * 100.0
 
-    # Save weights payload
     try:
         classifier.save_weights(output_path)
     except Exception as err:
-        print(f"Error saving weights to '{output_path}': {err}", file=sys.stderr)
+        print(f"Error saving model weights to {output_path}: {err}", file=sys.stderr)
         return 1
 
     if not quiet:
-        print(f"{CYAN}============================================================{RESET}")
-        print(f"{BOLD}{GREEN}✔ TRAINING COMPLETED SUCCESSFULLY IN {t1 - t0:.2f}s!{RESET}")
-        print(
-            f"• Training Set Accuracy : {BOLD}{train_accuracy:.2f}%{RESET} "
-            f"({correct_count}/{len(df)})"
-        )
-        print(f"• Model Weights Saved   : {BOLD}{output_path}{RESET}")
+        print(f"{CYAN}------------------------------------------------------------{RESET}")
+        print(f"{GREEN}✔ Model training completed successfully in {duration:.2f}s!{RESET}")
+        print(f"{GREEN}✔ Training Accuracy: {BOLD}{acc:.2f}%{RESET}")
+        print(f"{GREEN}✔ Learned weights saved to: {BOLD}{output_path}{RESET}")
         print(f"{CYAN}============================================================{RESET}")
 
     return 0
@@ -216,7 +238,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
         "--learning-rate",
         type=float,
         default=0.5,
-        help="Learning rate alpha for Batch Gradient Descent",
+        help="Learning rate alpha for Gradient Descent",
     )
     parser.add_argument(
         "-e",
@@ -224,6 +246,20 @@ def build_arg_parser() -> argparse.ArgumentParser:
         type=int,
         default=2000,
         help="Number of training iterations",
+    )
+    parser.add_argument(
+        "-m",
+        "--method",
+        choices=["batch", "sgd", "minibatch"],
+        default="batch",
+        help="Optimization algorithm: 'batch', 'sgd', or 'minibatch'",
+    )
+    parser.add_argument(
+        "-b",
+        "--batch-size",
+        type=int,
+        default=32,
+        help="Batch size for mini-batch gradient descent",
     )
     parser.add_argument(
         "--features",
@@ -251,6 +287,8 @@ def main() -> None:
         learning_rate=args.learning_rate,
         epochs=args.epochs,
         features_mode=args.features,
+        method=args.method,
+        batch_size=args.batch_size,
         quiet=args.quiet,
     )
     sys.exit(exit_code)

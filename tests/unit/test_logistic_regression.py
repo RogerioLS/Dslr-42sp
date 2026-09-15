@@ -214,6 +214,38 @@ class TestBinaryLogisticRegressionModel(unittest.TestCase):
         probas_rest = restored.predict_proba(self.X)
         np.testing.assert_allclose(probas_orig, probas_rest)
 
+    def test_optimizers_sgd_and_minibatch(self) -> None:
+        """Tests convergence of SGD and Mini-Batch gradient descent estimators."""
+        # Mini-Batch
+        clf_mb = BinaryLogisticRegression(
+            learning_rate=0.2,
+            epochs=100,
+            method="minibatch",
+            batch_size=16,
+            random_state=42,
+        )
+        clf_mb.fit(self.X, self.y)
+        self.assertTrue(clf_mb.is_fitted_)
+        self.assertLess(clf_mb.loss_history_[-1], clf_mb.loss_history_[0])
+        acc_mb = np.mean(clf_mb.predict(self.X) == self.y)
+        self.assertGreaterEqual(acc_mb, 0.95)
+
+        # SGD (m=1)
+        clf_sgd = BinaryLogisticRegression(
+            learning_rate=0.05,
+            epochs=50,
+            method="sgd",
+            random_state=42,
+        )
+        clf_sgd.fit(self.X, self.y)
+        self.assertTrue(clf_sgd.is_fitted_)
+        acc_sgd = np.mean(clf_sgd.predict(self.X) == self.y)
+        self.assertGreaterEqual(acc_sgd, 0.95)
+
+        # Invalid method
+        with self.assertRaises(ValueError):
+            BinaryLogisticRegression(method="quantum_gd")
+
 
 if __name__ == "__main__":
     unittest.main()
