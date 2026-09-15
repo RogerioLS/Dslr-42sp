@@ -192,6 +192,29 @@ def compute_stats_summary(values: Sequence[float]) -> Dict[str, float]:
     }
 
 
+def compute_bonus_stats_summary(values: Sequence[float], total_rows: int = 0) -> Dict[str, float]:
+    """Computes full descriptive statistics including bonus metrics and NaN counts.
+
+    Args:
+        values (Sequence[float]): Collection of non-null numerical values.
+        total_rows (int): Total number of rows including nulls in the feature column.
+
+    Returns:
+        Dict[str, float]: Dictionary with all 8 core metrics plus:
+            'Variance', 'IQR', 'Skewness', 'Kurtosis', 'NaNs'.
+    """
+    summary = compute_stats_summary(values)
+    count_val = len(values)
+    nans_count = max(0, total_rows - count_val) if total_rows > 0 else 0
+
+    summary["Variance"] = compute_variance(values)
+    summary["IQR"] = compute_iqr(values)
+    summary["Skewness"] = compute_skewness(values) if count_val >= 3 else 0.0
+    summary["Kurtosis"] = compute_kurtosis(values) if count_val >= 4 else 0.0
+    summary["NaNs"] = float(nans_count)
+    return summary
+
+
 def compute_covariance(x: Sequence[float], y: Sequence[float]) -> float:
     """Computes sample covariance between two paired numerical sequences.
 
@@ -256,3 +279,114 @@ def compute_pearson_correlation(x: Sequence[float], y: Sequence[float]) -> float
     if r < -1.0:
         return -1.0
     return r
+
+
+def compute_variance(values: Sequence[float]) -> float:
+    """Computes the sample variance with Bessel's correction (N - 1).
+
+    Formula:
+        s^2 = (1 / (N - 1)) * sum((x_i - mu)^2)
+
+    Args:
+        values (Sequence[float]): Collection of non-null numerical values.
+
+    Returns:
+        float: Sample variance.
+
+    Raises:
+        ValueError: If fewer than 2 elements.
+    """
+    n = compute_count(values)
+    if n < 2:
+        raise ValueError("Sample variance requires at least 2 observations.")
+
+    mu = compute_mean(values)
+    sum_sq = 0.0
+    for val in values:
+        diff = float(val) - mu
+        sum_sq += diff * diff
+
+    return sum_sq / (n - 1)
+
+
+def compute_iqr(values: Sequence[float]) -> float:
+    """Computes the Interquartile Range (IQR = Q3 - Q1).
+
+    Args:
+        values (Sequence[float]): Collection of non-null numerical values.
+
+    Returns:
+        float: Difference between 75th and 25th percentiles.
+    """
+    q75 = compute_percentile(values, 0.75)
+    q25 = compute_percentile(values, 0.25)
+    return q75 - q25
+
+
+def compute_skewness(values: Sequence[float]) -> float:
+    """Computes the sample skewness (Fisher-Pearson standardized 3rd moment).
+
+    Formula (unbiased sample skewness):
+        skew = (N / ((N - 1) * (N - 2))) * sum(((x_i - mu) / s)^3)
+
+    Args:
+        values (Sequence[float]): Collection of non-null numerical values.
+
+    Returns:
+        float: Sample skewness coefficient.
+
+    Raises:
+        ValueError: If fewer than 3 observations or standard deviation is zero.
+    """
+    n = compute_count(values)
+    if n < 3:
+        raise ValueError("Skewness computation requires at least 3 observations.")
+
+    mu = compute_mean(values)
+    std = compute_std(values)
+    if std == 0.0:
+        return 0.0
+
+    sum_cubed = 0.0
+    for val in values:
+        z = (float(val) - mu) / std
+        sum_cubed += z * z * z
+
+    factor = float(n) / ((n - 1) * (n - 2))
+    return factor * sum_cubed
+
+
+def compute_kurtosis(values: Sequence[float]) -> float:
+    """Computes sample excess kurtosis (Fisher definition, normal distribution = 0).
+
+    Formula:
+        kurt = (N * (N + 1) / ((N - 1) * (N - 2) * (N - 3))) * sum(z_i^4)
+               - (3 * (N - 1)^2 / ((N - 2) * (N - 3)))
+
+    Args:
+        values (Sequence[float]): Collection of non-null numerical values.
+
+    Returns:
+        float: Sample excess kurtosis.
+
+    Raises:
+        ValueError: If fewer than 4 observations or standard deviation is zero.
+    """
+    n = compute_count(values)
+    if n < 4:
+        raise ValueError("Kurtosis computation requires at least 4 observations.")
+
+    mu = compute_mean(values)
+    std = compute_std(values)
+    if std == 0.0:
+        return 0.0
+
+    sum_fourth = 0.0
+    for val in values:
+        z = (float(val) - mu) / std
+        sum_fourth += z * z * z * z
+
+    n_f = float(n)
+    term1 = (n_f * (n_f + 1.0)) / ((n_f - 1.0) * (n_f - 2.0) * (n_f - 3.0)) * sum_fourth
+    term2 = (3.0 * (n_f - 1.0) ** 2) / ((n_f - 2.0) * (n_f - 3.0))
+    return term1 - term2
