@@ -42,3 +42,27 @@ For $K = 4$ classes (Gryffindor, Hufflepuff, Ravenclaw, Slytherin), we train $K$
 $$\hat{y} = \arg\max_{c \in \mathcal{C}} P(Y = c \mid x) = \arg\max_{c \in \mathcal{C}} \sigma(\theta_c^T x)$$
 where:
 $$P(Y = c \mid x) = \frac{1}{1 + e^{-\theta_c^T x}}$$
+
+---
+
+## 3. Bonus Features & Optimization Algorithms
+
+### 3.1 Extended Descriptive Statistics
+- **Sample Variance ($s^2$)**:
+  $$s^2 = \frac{1}{N - 1}\sum_{i=1}^N (x_i - \mu)^2$$
+- **Interquartile Range ($IQR$)**:
+  $$\text{IQR} = Q_3 - Q_1 = \text{Percentile}(0.75) - \text{Percentile}(0.25)$$
+- **Sample Skewness ($g_1$)** (Fisher-Pearson unbiased 3rd standardized moment):
+  $$g_1 = \frac{N}{(N - 1)(N - 2)} \sum_{i=1}^N \left(\frac{x_i - \mu}{s}\right)^3$$
+- **Sample Excess Kurtosis ($g_2$)** (Fisher definition, normal distribution = 0):
+  $$g_2 = \frac{N(N + 1)}{(N - 1)(N - 2)(N - 3)} \sum_{i=1}^N \left(\frac{x_i - \mu}{s}\right)^4 - \frac{3(N - 1)^2}{(N - 2)(N - 3)}$$
+
+### 3.2 Optimization Methods Comparison
+
+| Optimizer | Batch Size ($B$) | Parameter Update Frequency | Trade-off / Characteristic |
+|---|---|---|---|
+| **Batch GD** (`--method batch`) | $m$ (all samples) | Once per epoch | Deterministic, exact gradient, smooth monotonic loss decay. |
+| **SGD** (`--method sgd`) | $1$ (single sample) | $m$ times per epoch | High stochasticity, escapes local minima, noisy loss oscillations. |
+| **Mini-Batch GD** (`--method minibatch`) | $32$ / $64$ | $\lceil m / B \rceil$ times per epoch | Ideal sweet spot: SIMD vectorized matrix stability + stochastic escape. |
+
+$$\theta := \theta - \alpha \cdot \frac{1}{|B|} \sum_{i \in B} (h_\theta(x^{(i)}) - y^{(i)}) x^{(i)}$$
