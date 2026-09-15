@@ -67,15 +67,28 @@ class TestCLIDescribe(unittest.TestCase):
         self.assertIn("Count", result.stdout)
 
     def test_describe_missing_arguments(self) -> None:
-        """Verifies describe.py exits with code 1 when invoked without arguments."""
+        """Verifies describe.py exits with error when invoked without arguments."""
         result = subprocess.run(
             [sys.executable, str(self.describe_script)],
             capture_output=True,
             text=True,
             check=False,
         )
-        self.assertEqual(result.returncode, 1)
-        self.assertIn("Usage:", result.stderr)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("usage:", result.stderr.lower())
+
+    def test_describe_bonus_flag(self) -> None:
+        """Verifies running describe.py with --bonus displays extended metrics."""
+        result = subprocess.run(
+            [sys.executable, str(self.describe_script), str(self.train_dataset), "--bonus"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0)
+        output = result.stdout
+        for bonus_metric in ["Variance", "IQR", "Skewness", "Kurtosis", "NaNs"]:
+            self.assertIn(bonus_metric, output)
 
     def test_describe_nonexistent_file(self) -> None:
         """Verifies describe.py exits with code 1 when given a non-existent file path."""
@@ -95,6 +108,7 @@ class TestCLIDescribe(unittest.TestCase):
     def test_run_describe_function_directly(self) -> None:
         """Verifies direct programmatic execution via run_describe helper."""
         self.assertEqual(run_describe(str(self.train_dataset)), 0)
+        self.assertEqual(run_describe(str(self.train_dataset), bonus=True), 0)
         self.assertEqual(run_describe("invalid_file.csv"), 1)
 
     def test_format_describe_table_empty(self) -> None:

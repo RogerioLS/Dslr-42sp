@@ -190,6 +190,41 @@ class TestStatisticsMath(unittest.TestCase):
         r = compute_pearson_correlation(x, y)
         self.assertAlmostEqual(r, -1.0, places=5)
 
+    def test_bonus_statistics_metrics(self) -> None:
+        """Verifies bonus metrics (Variance, IQR, Skewness, Kurtosis, NaNs) against pandas/scipy."""
+        from src.analytics.statistics import (
+            compute_bonus_stats_summary,
+            compute_iqr,
+            compute_kurtosis,
+            compute_skewness,
+            compute_variance,
+        )
+
+        data = [2.0, 4.0, 4.0, 4.0, 5.0, 5.0, 7.0, 9.0]
+        s = pd.Series(data)
+
+        # Variance
+        self.assertAlmostEqual(compute_variance(data), float(s.var()), places=7)
+
+        # IQR
+        q75 = float(s.quantile(0.75))
+        q25 = float(s.quantile(0.25))
+        self.assertAlmostEqual(compute_iqr(data), q75 - q25, places=7)
+
+        # Skewness
+        self.assertAlmostEqual(compute_skewness(data), float(s.skew()), places=5)
+
+        # Kurtosis
+        self.assertAlmostEqual(compute_kurtosis(data), float(s.kurt()), places=5)
+
+        # Bonus summary dict
+        summary = compute_bonus_stats_summary(data, total_rows=12)
+        self.assertEqual(summary["NaNs"], 4.0)
+        self.assertIn("Variance", summary)
+        self.assertIn("IQR", summary)
+        self.assertIn("Skewness", summary)
+        self.assertIn("Kurtosis", summary)
+
 
 if __name__ == "__main__":
     unittest.main()
