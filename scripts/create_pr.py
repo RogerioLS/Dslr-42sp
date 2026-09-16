@@ -50,11 +50,21 @@ def get_git_output(cmd: List[str]) -> str:
 
 
 def get_github_token() -> str:
-    """Retrieves GitHub personal access token from env or git credential helper."""
+    """Retrieves GitHub personal access token from env, file, or git credential helper."""
     for env_var in ("GITHUB_TOKEN", "GH_TOKEN"):
         val = os.environ.get(env_var, "").strip()
         if val:
             return val
+
+    # Check ~/.github_token
+    token_file = Path.home() / ".github_token"
+    if token_file.exists():
+        try:
+            val = token_file.read_text(encoding="utf-8").strip()
+            if val:
+                return val
+        except Exception:
+            pass
 
     try:
         proc = subprocess.run(
