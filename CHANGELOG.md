@@ -11,6 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.0] - 2026-09-16 — 04. Defense Readiness & Bonuses
+
+### ✨ Features & Algorithms
+- [DSLR-12] Bonus: Otimizadores (SGD / Mini-Batch GD) & Estatísticas Extras ([#12](https://github.com/RogerioLS/Dslr-42sp/issues/12)) by @RogerioLS
+
+### 🛡️ Norms, Tests & Quality
+- [DSLR-13] Peer Defense Simulator: Mock Interview & Perguntas da 42 ([#13](https://github.com/RogerioLS/Dslr-42sp/issues/13)) by @RogerioLS
+---
+
 ## [0.3.0] - 2026-09-14 — 03. Logistic Regression Engine & Math
 
 ### ✨ Features & Algorithms
