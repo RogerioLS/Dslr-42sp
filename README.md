@@ -13,6 +13,9 @@
         <img src="https://img.shields.io/badge/License-MIT-purple?style=flat" alt="License"/>
       </p>
       <p align="center">
+        <a href="https://rogeriols.github.io/Dslr-42sp/interactive_journey.html" target="_blank">
+          <img src="https://img.shields.io/badge/Interactive_Journey-GitHub_Pages-0969da?style=flat&logo=githubpages&logoColor=white" alt="GitHub Pages Masterclass"/>
+        </a>
         <a href="https://github.com/RogerioLS/Dslr-42sp/actions" target="_blank">
           <img src="https://img.shields.io/badge/CI%2FCD-GitHub_Actions-0969da?style=flat&logo=githubactions&logoColor=white" alt="CI/CD"/>
         </a>
