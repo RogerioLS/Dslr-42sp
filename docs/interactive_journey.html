@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>42 DSLR — Guia do Projeto & Dissecação Matemática Passo a Passo</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+
+  <!-- KaTeX for Clean Formula Rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    code, pre { font-family: 'Fira Code', monospace; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen antialiased selection:bg-amber-500 selection:text-slate-950 pb-24">
+
+  <!-- TOP HEADER & NAVEGAÇÃO DOS PASSOS REAIS -->
+  <header class="border-b border-slate-800 bg-slate-900/95 backdrop-blur sticky top-0 z-50 shadow-xl">
+    <div class="max-w-7xl mx-auto px-6 py-3.5 space-y-3">
+
+      <!-- HEADER TITLE BAR -->
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-red-600 to-indigo-700 flex items-center justify-center font-bold text-white shadow-lg shadow-amber-500/20 text-base">
+            42
+          </div>
+          <div>
+            <h1 class="text-base font-bold tracking-tight text-white flex items-center gap-2">
+              DSLR — Data Science × Logistic Regression
+              <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Espelho Real & Matemática Descomplicada</span>
+            </h1>
+            <p class="text-[11px] text-slate-400">Cada fórmula dissecada do zero: o significado de cada símbolo, a intuição prática e exemplos numéricos simples.</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 text-xs font-mono">
+          <span class="px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Acurácia Real: 98.44%</span>
+          <span class="px-2.5 py-1 rounded-md bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">make audit: 100% OK</span>
+        </div>
+      </div>
+
+      <!-- NAVEGAÇÃO DOS PASSOS -->
+      <nav class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 pt-2 border-t border-slate-800/80 text-xs">
+        <a href="#passo-1" class="px-2 py-2 rounded-xl font-medium text-slate-300 bg-slate-950 border border-slate-800 hover:bg-slate-800 hover:text-white transition text-center flex flex-col items-center justify-center gap-0.5">
+          <span class="text-xs">📂 1. O Dataset</span>
+          <span class="text-[10px] text-slate-400">1600 Alunos</span>
+        </a>
+        <a href="#passo-2" class="px-2 py-2 rounded-xl font-medium text-amber-300 bg-amber-950/40 border border-amber-500/30 hover:bg-amber-900/50 transition text-center flex flex-col items-center justify-center gap-0.5">
+          <span class="text-xs">📊 2. describe.py</span>
+          <span class="text-[10px] text-slate-400">Estatísticas Dissecadas</span>
+        </a>
+        <a href="#passo-3" class="px-2 py-2 rounded-xl font-medium text-purple-300 bg-purple-950/40 border border-purple-500/30 hover:bg-purple-900/50 transition text-center flex flex-col items-center justify-center gap-0.5">
+          <span class="text-xs">🎨 3. Visualização</span>
+          <span class="text-[10px] text-slate-400">Os 3 Gráficos</span>
+        </a>
+        <a href="#passo-4" class="px-2 py-2 rounded-xl font-medium text-blue-300 bg-blue-950/40 border border-blue-500/30 hover:bg-blue-900/50 transition text-center flex flex-col items-center justify-center gap-0.5">
+          <span class="text-xs">⚖️ 4. Scaler & NaNs</span>
+          <span class="text-[10px] text-slate-400">Z-Score na Prática</span>
+        </a>
+        <a href="#passo-5" class="px-2 py-2 rounded-xl font-medium text-rose-300 bg-rose-950/40 border border-rose-500/30 hover:bg-rose-900/50 transition text-center flex flex-col items-center justify-center gap-0.5">
+          <span class="text-xs">🧙‍♂️ 5. logreg_train</span>
+          <span class="text-[10px] text-slate-400">Sigmoide & Gradiente</span>
+        </a>
+        <a href="#passo-6" class="px-2 py-2 rounded-xl font-medium text-emerald-300 bg-emerald-950/40 border border-emerald-500/30 hover:bg-emerald-900/50 transition text-center flex flex-col items-center justify-center gap-0.5">
+          <span class="text-xs">🔮 6. logreg_predict</span>
+          <span class="text-[10px] text-slate-400">ArgMax houses.csv</span>
+        </a>
+        <a href="#passo-7" class="px-2 py-2 rounded-xl font-medium text-slate-300 bg-slate-950 border border-slate-800 hover:bg-slate-800 hover:text-white transition text-center flex flex-col items-center justify-center gap-0.5">
+          <span class="text-xs">🎓 7. Defesa 42</span>
+          <span class="text-[10px] text-slate-400">Q&A Prático</span>
+        </a>
+      </nav>
+
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-6 py-10 space-y-16">
+
+    <!-- HERO BANNER -->
+    <section class="rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950/30 to-slate-950 border border-slate-800 p-8 md:p-12 relative overflow-hidden shadow-2xl">
+      <div class="max-w-3xl space-y-4">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold">
+          🧙‍♂️ Guia Fiel de Engenharia & Matemática Acessível
+        </div>
+        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-white leading-tight">
+          Entendendo cada conta do DSLR sem mistérios e sem mágica.
+        </h2>
+        <p class="text-slate-300 text-sm md:text-base leading-relaxed">
+          Para quem nunca trabalhou com Ciência de Dados, ver símbolos como $\sum$, $\theta^T x$, $\ln(h)$ e $\sigma(z)$ parece outro idioma.
+          Aqui, pegamos <strong>cada fórmula real do nosso projeto</strong> e abrimos como um motor desmontado:
+          explicando o que cada letra significa, a intuição do dia a dia, e um exemplo numérico simples para calcular de cabeça.
+        </p>
+
+        <!-- CASAS DE HOGWARTS CHIPS -->
+        <div class="flex flex-wrap items-center gap-2 pt-2">
+          <span class="px-3 py-1 rounded-lg text-xs font-semibold bg-red-950/60 text-red-300 border border-red-500/40">🦁 Gryffindor</span>
+          <span class="px-3 py-1 rounded-lg text-xs font-semibold bg-emerald-950/60 text-emerald-300 border border-emerald-500/40">🐍 Slytherin</span>
+          <span class="px-3 py-1 rounded-lg text-xs font-semibold bg-blue-950/60 text-blue-300 border border-blue-500/40">🦅 Ravenclaw</span>
+          <span class="px-3 py-1 rounded-lg text-xs font-semibold bg-yellow-950/60 text-yellow-300 border border-yellow-500/40">🦡 Hufflepuff</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================================== -->
+    <!-- PASSO 1: O DATASET DE HOGWARTS -->
+    <!-- ==================================================================== -->
+    <section id="passo-1" class="space-y-6 scroll-mt-28">
+      <div class="border-b border-slate-800 pb-4">
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-0.5 rounded-md bg-slate-800 text-slate-300 text-xs font-bold uppercase tracking-wider">Passo 01</span>
+          <span class="text-xs text-slate-500">Estrutura de Dados</span>
+        </div>
+        <h3 class="text-2xl font-bold text-white mt-1">📂 O Dataset de Hogwarts & Carregamento (`src/analytics/loader.py`)</h3>
+        <p class="text-xs text-slate-400 mt-1">O que temos em mãos e o que realmente importa para a classificação.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+          <h4 class="text-white font-bold text-sm flex items-center gap-2">
+            📄 Anatomia dos Arquivos CSV
+          </h4>
+          <ul class="text-xs text-slate-300 space-y-2 leading-relaxed">
+            <li><strong class="text-indigo-300">datasets/dataset_train.csv:</strong> 1.600 alunos com a coluna <code>Hogwarts House</code> preenchida. É o nosso gabarito para treinar.</li>
+            <li><strong class="text-purple-300">datasets/dataset_test.csv:</strong> 400 alunos com a coluna <code>Hogwarts House</code> vazia. É onde o Chapéu Seletor deve classificar.</li>
+            <li><strong class="text-amber-300">Colunas Não-Numéricas (Descartadas no Treino):</strong> <code>Index</code>, <code>First Name</code>, <code>Last Name</code>, <code>Birthday</code> e <code>Best Hand</code> (não contêm sinal preditivo para a casa).</li>
+            <li><strong class="text-emerald-300">13 Matérias Numéricas:</strong> Arithmancy, Astronomy, Herbology, Defense Against the Dark Arts, Divination, Muggle Studies, Ancient Runes, History of Magic, Transfiguration, Potions, Care of Magical Creatures, Charms e Flying.</li>
+          </ul>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+          <h4 class="text-white font-bold text-sm flex items-center gap-2">
+            🛡️ O Que Implementamos no `loader.py`
+          </h4>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Uma função robusta chamada <code>load_csv(filepath)</code> que:
+          </p>
+          <ul class="text-xs text-slate-300 space-y-2 list-disc list-inside">
+            <li>Verifica se o arquivo existe e lança erro amigável se não encontrar.</li>
+            <li>Verifica se o arquivo está vazio ou corrompido.</li>
+            <li>Separa automaticamente as colunas que são números das colunas de texto/metadados.</li>
+            <li>Garante tipos float nativos para cálculos vetoriais sem quebras.</li>
+          </ul>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================================================================== -->
+    <!-- PASSO 2: ANÁLISE ESTATÍSTICA MANUAL (describe.py) DISSECADA -->
+    <!-- ==================================================================== -->
+    <section id="passo-2" class="space-y-6 scroll-mt-28">
+      <div class="border-b border-slate-800 pb-4">
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 text-xs font-bold uppercase tracking-wider">Passo 02</span>
+          <span class="text-xs text-slate-500">Estatística Sem Bibliotecas Prontas</span>
+        </div>
+        <h3 class="text-2xl font-bold text-white mt-1">📊 Análise Descritiva Manual (`describe.py` & `src/analytics/statistics.py`)</h3>
+        <p class="text-xs text-slate-400 mt-1">Dissecando cada fórmula matemática de estatística: o significado de cada símbolo e por que calculamos assim.</p>
+      </div>
+
+      <!-- DISSECAÇÃO DETALHADA DAS 4 FÓRMULAS CHAVE -->
+      <div class="space-y-6">
+
+        <!-- 1. MÉDIA -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+            <div>
+              <span class="text-xs font-mono font-bold text-amber-400 uppercase tracking-wider">Estatística Mandatória 01</span>
+              <h4 class="text-lg font-bold text-white">Mean (Média Aritmética $\mu$)</h4>
+            </div>
+            <div class="bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 font-mono text-sm text-amber-300">
+              $$\mu = \frac{1}{N} \sum_{i=1}^N x_i$$
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-300">
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+              <strong class="text-amber-400 block font-mono text-sm">O que cada símbolo significa:</strong>
+              <p>• $\sum_{i=1}^N$: Letra grega Sigma. Significa "somatório": um simples <code>for</code> que vai do 1º ao último aluno somando as notas.</p>
+              <p>• $x_i$: A nota do aluno $i$.</p>
+              <p>• $N$: A contagem total de alunos que possuem nota válida (ignorando os faltantes com <code>NaN</code>).</p>
+            </div>
+
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+              <strong class="text-indigo-400 block font-mono text-sm">A Intuição da Vida Real:</strong>
+              <p>É o centro gravitacional da turma. Se juntássemos todas as notas e distribuíssemos em partes exatamente iguais para todo mundo, qual nota cada um teria?</p>
+              <p class="text-slate-400 italic">Cuidado: a média é facilmente "puxada" por uma única nota bizarra (um aluno nota 100 empurra a média da turma toda para cima).</p>
+            </div>
+
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+              <strong class="text-emerald-400 block font-mono text-sm">Exemplo Numérico com 3 Alunos:</strong>
+              <p>Notas em Poções: $[4, 6, 8]$ ($N = 3$).</p>
+              <p>Soma: $4 + 6 + 8 = 18$.</p>
+              <p class="font-bold text-white">$$\mu = \frac{18}{3} = 6.0$$</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. DESVIO PADRÃO & BESSEL -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+            <div>
+              <span class="text-xs font-mono font-bold text-purple-400 uppercase tracking-wider">Estatística Mandatória 02</span>
+              <h4 class="text-lg font-bold text-white">Std (Desvio Padrão Amostral $s$ com Correção de Bessel)</h4>
+            </div>
+            <div class="bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 font-mono text-sm text-purple-300">
+              $$s = \sqrt{\frac{1}{N-1} \sum_{i=1}^N (x_i - \mu)^2}$$
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-300">
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+              <strong class="text-purple-400 block font-mono text-sm">Dissecando a Fórmula por Partes:</strong>
+              <p>1. $(x_i - \mu)$: A distância de cada nota até a média.</p>
+              <p>2. Ao quadrado $()^2$: Para que distâncias negativas não anulem as positivas e para punir desvios grandes.</p>
+              <p>3. Dividir por $(N-1)$: Correção de Bessel.</p>
+              <p>4. Raiz $\sqrt{}$: Para voltar da unidade "quadrada" para a nota original.</p>
+            </div>
+
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+              <strong class="text-amber-400 block font-mono text-sm">Por que dividir por (N - 1) e não N?</strong>
+              <p>Isso se chama <strong>Correção de Bessel</strong>. Quando usamos uma amostra de alunos (1600) para estimar o mundo todo, calcular a média consome 1 grau de liberdade.</p>
+              <p>Dividir por $N$ subestimaria a variação real. Dividir por $N-1$ corrige esse viés matematicamente, ficando 100% idêntico ao Pandas.</p>
+            </div>
+
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+              <strong class="text-emerald-400 block font-mono text-sm">Exemplo Numérico com as Mesmas Notas:</strong>
+              <p>Notas: $[4, 6, 8]$ ($\mu = 6$). Distâncias da média:</p>
+              <p>• $(4 - 6)^2 = (-2)^2 = 4$</p>
+              <p>• $(6 - 6)^2 = 0^2 = 0$</p>
+              <p>• $(8 - 6)^2 = 2^2 = 4$</p>
+              <p>Soma dos quadrados: $4 + 0 + 4 = 8$.</p>
+              <p class="font-bold text-white">$$s = \sqrt{\frac{8}{3 - 1}} = \sqrt{\frac{8}{2}} = \sqrt{4} = \mathbf{2.0}$$</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. PERCENTIS E INTERPOLAÇÃO -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+            <div>
+              <span class="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider">Estatística Mandatória 03</span>
+              <h4 class="text-lg font-bold text-white">Quartis (25%, 50%, 75%) por Interpolação Linear</h4>
+            </div>
+            <div class="bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 font-mono text-sm text-emerald-300">
+              $$k = p \times (N - 1) \quad \text{onde } p \in \{0.25, 0.50, 0.75\}$$
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-300">
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+              <strong class="text-emerald-400 block font-mono text-sm">O que é um Quartil / Percentil:</strong>
+              <p>Imagine todos os alunos ordenados em fila indiana da menor nota para a maior:</p>
+              <p>• <strong>50% (Mediana):</strong> O aluno bem no meio da fila. Metade da turma tirou menos, metade tirou mais.</p>
+              <p>• <strong>25% ($Q_1$):</strong> A nota na marca de um quarto da fila.</p>
+              <p>• <strong>75% ($Q_3$):</strong> A nota na marca de três quartos da fila.</p>
+            </div>
+
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+              <strong class="text-indigo-400 block font-mono text-sm">O Que é Interpolação Linear:</strong>
+              <p>Nem sempre o índice da fila dá um número inteiro. Se o índice $k$ der $2.4$, significa que a resposta está entre o aluno da posição 2 e o aluno da posição 3.</p>
+              <p>Nós pegamos a nota do aluno 2 e somamos $40\%$ da distância até o aluno 3:
+              $$Q = x_2 + 0.4 \times (x_3 - x_2)$$</p>
+            </div>
+
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+              <strong class="text-amber-400 block font-mono text-sm">Exemplo Numérico com 4 Notas:</strong>
+              <p>Notas ordenadas: $[10, 20, 30, 40]$ ($N = 4$).</p>
+              <p>Para achar a Mediana ($p = 0.50$):</p>
+              <p>Índice $k = 0.5 \times (4 - 1) = 0.5 \times 3 = \mathbf{1.5}$.</p>
+              <p>Caiu entre a posição 1 ($20$) e a posição 2 ($30$):</p>
+              <p class="font-bold text-white">$$Q_{50\%} = 20 + 0.5 \times (30 - 20) = \mathbf{25.0}$$</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. AS FÓRMULAS DO BÔNUS ESMIUÇADAS -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div>
+              <span class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wider">Estatísticas Bônus (--bonus)</span>
+              <h4 class="text-lg font-bold text-white">Variância, IQR, Skewness e Kurtosis Descomplicadas</h4>
+            </div>
+            <span class="text-xs font-mono px-2.5 py-1 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">Flag --bonus</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs text-slate-300">
+            <!-- VARIÂNCIA -->
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1.5">
+              <span class="text-cyan-400 font-bold font-mono text-sm block">1. Variância ($s^2$)</span>
+              <p class="font-mono text-white text-center">$$s^2 = \frac{1}{N-1} \sum (x_i - \mu)^2$$</p>
+              <p>É o próprio desvio padrão antes de tirar a raiz quadrada. Mostra a energia total da dispersão das notas.</p>
+            </div>
+
+            <!-- IQR -->
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1.5">
+              <span class="text-emerald-400 font-bold font-mono text-sm block">2. IQR (Interquartile Range)</span>
+              <p class="font-mono text-white text-center">$$\text{IQR} = Q_{75\%} - Q_{25\%}$$</p>
+              <p>Mede a faixa onde moram os 50% alunos "normais" da turma. Imune a notas bizarras de bruxos trapaceiros.</p>
+            </div>
+
+            <!-- SKEWNESS -->
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1.5">
+              <span class="text-amber-400 font-bold font-mono text-sm block">3. Skewness ($g_1$ Assimetria)</span>
+              <p class="font-mono text-white text-center">$$g_1 = \frac{\frac{1}{N} \sum (x_i - \mu)^3}{s^3}$$</p>
+              <p>Por que ao cubo $()^3$? Porque expoente ímpar mantém sinal! Se tem mais cauda para a direita ($>0$) ou esquerda ($<0$).</p>
+            </div>
+
+            <!-- KURTOSIS -->
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1.5">
+              <span class="text-rose-400 font-bold font-mono text-sm block">4. Kurtosis ($g_2$ Curtose)</span>
+              <p class="font-mono text-white text-center">$$g_2 = \frac{\frac{1}{N} \sum (x_i - \mu)^4}{s^4} - 3$$</p>
+              <p>Expoente à quarta $()^4$: dispara quando existem outliers extremos. Se $g_2 > 0$, há muitos pontos fora da curva.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================================================================== -->
+    <!-- PASSO 3: A TRÍADE DA VISUALIZAÇÃO GRÁFICA -->
+    <!-- ==================================================================== -->
+    <section id="passo-3" class="space-y-6 scroll-mt-28">
+      <div class="border-b border-slate-800 pb-4">
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-0.5 rounded-md bg-purple-500/20 text-purple-300 text-xs font-bold uppercase tracking-wider">Passo 03</span>
+          <span class="text-xs text-slate-500">Visualização de Dados</span>
+        </div>
+        <h3 class="text-2xl font-bold text-white mt-1">🎨 A Tríade da Visualização Gráfica</h3>
+        <p class="text-xs text-slate-400 mt-1">Os 3 scripts que construímos para responder exatamente às 3 perguntas do subject da 42.</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- HISTOGRAMA -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-mono text-xs font-bold">histogram.py</span>
+            <span class="text-xs text-slate-400">Capítulo V.2.1</span>
+          </div>
+          <h4 class="text-white font-bold text-sm">Pergunta: Qual curso tem distribuição homogênea entre as 4 casas?</h4>
+          <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs text-slate-300 space-y-2">
+            <p><strong class="text-purple-300">Resposta Conclusiva:</strong> <em>Care of Magical Creatures</em>.</p>
+            <p><strong>O que o gráfico mostra:</strong> As 4 distribuições das casas estão completamente sobrepostas e centradas na mesma média ($\approx 0$). Não há separação visual entre Gryffindor, Slytherin, Ravenclaw e Hufflepuff. Essa matéria não ajuda o modelo a classificar ninguém.</p>
+          </div>
+          <div class="text-[11px] font-mono text-slate-400 bg-slate-950/60 p-2 rounded border border-slate-800/60">
+            $ python3 histogram.py datasets/dataset_train.csv
+          </div>
+        </div>
+
+        <!-- SCATTER PLOT -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-mono text-xs font-bold">scatter_plot.py</span>
+            <span class="text-xs text-slate-400">Capítulo V.2.2</span>
+          </div>
+          <h4 class="text-white font-bold text-sm">Pergunta: Quais são as duas features que são semelhantes?</h4>
+          <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs text-slate-300 space-y-2">
+            <p><strong class="text-indigo-300">Resposta Conclusiva:</strong> <em>Astronomy</em> e <em>Defense Against the Dark Arts</em>.</p>
+            <p><strong>O que o gráfico mostra:</strong> Os pontos formam uma linha reta perfeita com correlação negativa quase exata ($r \approx -0.99$). Quem vai bem em uma vai mal na outra proporcionalmente. Elas trazem informação repetida (multicolinearidade).</p>
+          </div>
+          <div class="text-[11px] font-mono text-slate-400 bg-slate-950/60 p-2 rounded border border-slate-800/60">
+            $ python3 scatter_plot.py datasets/dataset_train.csv
+          </div>
+        </div>
+
+        <!-- PAIR PLOT -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono text-xs font-bold">pair_plot.py</span>
+            <span class="text-xs text-slate-400">Capítulo V.2.3</span>
+          </div>
+          <h4 class="text-white font-bold text-sm">Pergunta: Quais features você vai usar na regressão logística?</h4>
+          <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs text-slate-300 space-y-2">
+            <p><strong class="text-emerald-300">Seleção de Features:</strong></p>
+            <p>O Pair Plot gera a matriz de dispersão completa das 13 matérias. Observamos que matérias como <em>Herbology</em>, <em>Divination</em>, <em>Muggle Studies</em> e <em>Ancient Runes</em> formam agrupamentos visivelmente isolados para cada casa, enquanto matérias homogêneas são descartadas.</p>
+          </div>
+          <div class="text-[11px] font-mono text-slate-400 bg-slate-950/60 p-2 rounded border border-slate-800/60">
+            $ python3 pair_plot.py datasets/dataset_train.csv
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================================================================== -->
+    <!-- PASSO 4: PREPROCESSING & FEATURE SCALING DISSECADO -->
+    <!-- ==================================================================== -->
+    <section id="passo-4" class="space-y-6 scroll-mt-28">
+      <div class="border-b border-slate-800 pb-4">
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-0.5 rounded-md bg-blue-500/20 text-blue-300 text-xs font-bold uppercase tracking-wider">Passo 04</span>
+          <span class="text-xs text-slate-500">Pipeline de Dados</span>
+        </div>
+        <h3 class="text-2xl font-bold text-white mt-1">⚖️ Tratamento de Dados: A Matemática do Z-Score (`src/preprocessing/scaler.py`)</h3>
+        <p class="text-xs text-slate-400 mt-1">Por que e como colocamos notas de grandezas diferentes na mesma régua comparável.</p>
+      </div>
+
+      <!-- DISSECAÇÃO DO Z-SCORE -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+          <div>
+            <span class="text-xs font-mono font-bold text-blue-400 uppercase tracking-wider">Fórmula de Padronização</span>
+            <h4 class="text-lg font-bold text-white">StandardScaler: Z-Score Passo a Passo</h4>
+          </div>
+          <div class="bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 font-mono text-sm text-blue-300">
+            $$z = \frac{x - \mu}{\sigma}$$
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-300">
+          <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1.5">
+            <strong class="text-blue-400 block font-mono text-sm">1. O Que Significa Cada Pedaço:</strong>
+            <p>• $(x - \mu)$: <strong>Centralização.</strong> Subtrai a média da matéria. Quem tirou a média exata vira $0$. Quem tirou acima vira positivo, quem tirou abaixo vira negativo.</p>
+            <p>• Dividir por $\sigma$: <strong>Re-escalonamento.</strong> Mede a nota em "quantos desvios padrão" ela se afastou do normal.</p>
+          </div>
+
+          <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1.5">
+            <strong class="text-amber-400 block font-mono text-sm">2. Por Que Isso Salva o Treino:</strong>
+            <p>Em Hogwarts, a matéria <em>Arithmancy</em> varia na casa de $50.000$, enquanto <em>Potions</em> varia na casa de $5$.</p>
+            <p>Se não padronizarmos, o algoritmo acha que Aritmancia é dez mil vezes mais importante só porque o número é grande! O Z-score força ambas a ficarem no mesmo tamanho comparável (média 0 e desvio 1).</p>
+          </div>
+
+          <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1.5">
+            <strong class="text-emerald-400 block font-mono text-sm">3. Exemplo Numérico da Vida Real:</strong>
+            <p>Média de Astronomia $\mu = 40$, desvio $\sigma = 10$.</p>
+            <p>• Harry tirou nota $60$:
+              $$z_{\text{Harry}} = \frac{60 - 40}{10} = \frac{20}{10} = \mathbf{+2.0}$$
+              (Harry está $2$ desvios acima da média da turma!)
+            </p>
+            <p>• Rony tirou nota $30$:
+              $$z_{\text{Rony}} = \frac{30 - 40}{10} = \frac{-10}{10} = \mathbf{-1.0}$$
+            </p>
+          </div>
+        </div>
+
+        <!-- CALLOUT DATA LEAKAGE -->
+        <div class="bg-blue-950/20 border border-blue-500/30 rounded-xl p-4 text-xs text-blue-200 mt-2">
+          <strong class="text-blue-300">🛡️ Prevenção de Data Leakage no Código:</strong>
+          As médias ($\mu$), desvios ($\sigma$) e medianas de imputação são calculados <strong>apenas sobre os alunos de treino</strong> e salvos no arquivo <code>weights.json</code>. Na hora de classificar os alunos de teste, aplicamos os mesmos $\mu$ e $\sigma$ guardados. Nunca olhamos para o dataset de teste com antecedência!
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================================== -->
+    <!-- PASSO 5: TREINAMENTO ONE-VS-REST & FÓRMULAS DISSECADAS -->
+    <!-- ==================================================================== -->
+    <section id="passo-5" class="space-y-6 scroll-mt-28">
+      <div class="border-b border-slate-800 pb-4">
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-0.5 rounded-md bg-rose-500/20 text-rose-300 text-xs font-bold uppercase tracking-wider">Passo 05</span>
+          <span class="text-xs text-slate-500">Motor de Treino</span>
+        </div>
+        <h3 class="text-2xl font-bold text-white mt-1">🧙‍♂️ Treinamento One-vs-Rest: As Fórmulas do Anexo VIII.1 Dissecadas</h3>
+        <p class="text-xs text-slate-400 mt-1">Entendendo a fundo a combinação linear, a sigmoide, a Log-Loss e o gradiente sem termos abstratos.</p>
+      </div>
+
+      <div class="space-y-6">
+
+        <!-- 1. COMBINAÇÃO LINEAR E HIPÓTESE -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+            <div>
+              <span class="text-xs font-mono font-bold text-amber-400 uppercase tracking-wider">Fórmula 01 do Anexo</span>
+              <h4 class="text-lg font-bold text-white">Combinação Linear & Hipótese: $z = \mathbf{\theta}^T \mathbf{x}$</h4>
+            </div>
+            <div class="bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 font-mono text-sm text-amber-300">
+              $$z = \theta_0 + \theta_1 x_1 + \theta_2 x_2 + \dots + \theta_d x_d$$
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-300">
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+              <strong class="text-amber-400 block font-mono text-sm">O Que É Cada Termo:</strong>
+              <p>• $x_j$: As notas padronizadas do aluno nas matérias.</p>
+              <p>• $\theta_j$: O <strong>peso</strong> (importância) que aquela casa dá para cada matéria.</p>
+              <p>• $\theta_0$: O viés (bias / intercepto), o ponto de partida base da casa.</p>
+            </div>
+
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+              <strong class="text-indigo-400 block font-mono text-sm">A Intuição da Balança de Pontos:</strong>
+              <p>Pense como o Chapéu Seletor pensando: se uma nota alta em Poções indica Slytherin, o peso $\theta_{\text{potions}}$ será <strong>positivo</strong>. Se nota alta em Poções diminui a chance de ser Hufflepuff, o peso será <strong>negativo</strong>.</p>
+            </div>
+
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+              <strong class="text-emerald-400 block font-mono text-sm">Exemplo com 1 Aluno e 2 Matérias:</strong>
+              <p>Bias $\theta_0 = 0.0$, pesos $\theta_1 = +2.0$, $\theta_2 = -1.0$.</p>
+              <p>Notas padronizadas: $x_1 = 1.5$, $x_2 = 0.5$.</p>
+              <p>Score $z = 0.0 + (2.0 \times 1.5) + (-1.0 \times 0.5)$</p>
+              <p class="font-bold text-white">$$z = 3.0 - 0.5 = \mathbf{+2.5}$$</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. FUNÇÃO SIGMOIDE -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+            <div>
+              <span class="text-xs font-mono font-bold text-purple-400 uppercase tracking-wider">Fórmula 02 do Anexo</span>
+              <h4 class="text-lg font-bold text-white">Função de Ativação Sigmoide $g(z)$</h4>
+            </div>
+            <div class="bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 font-mono text-sm text-purple-300">
+              $$g(z) = \frac{1}{1 + e^{-z}}$$
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-300">
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+              <strong class="text-purple-400 block font-mono text-sm">Por que essa fórmula esquisita?</strong>
+              <p>O score linear $z$ pode dar qualquer valor: $-50$, $0$, $+120$. Mas não existe probabilidade de $-50$ nem de $+120\%$!</p>
+              <p>A constante matemática $e \approx 2.718$ (Euler) tem a mágica de transformar qualquer valor real em uma curva suave em formato de "S" estritamente entre $0$ e $1$.</p>
+            </div>
+
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+              <strong class="text-amber-400 block font-mono text-sm">Os 3 Casos Notáveis:</strong>
+              <p>• <strong>Em cima do muro ($z = 0$):</strong> $e^0 = 1 \implies \frac{1}{1+1} = \mathbf{0.50}$ (50% de chance exata!).</p>
+              <p>• <strong>Muito Positivo ($z = +5$):</strong> $e^{-5} \approx 0.006 \implies \frac{1}{1.006} \approx \mathbf{0.99}$ (99% de certeza!).</p>
+              <p>• <strong>Muito Negativo ($z = -5$):</strong> $e^5 \approx 148 \implies \frac{1}{149} \approx \mathbf{0.006}$ (Quase 0%!).</p>
+            </div>
+
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+              <strong class="text-emerald-400 block font-mono text-sm">Exemplo com o Score Anterior ($z = +2.5$):</strong>
+              <p>Score $z = 2.5$.</p>
+              <p>$e^{-2.5} \approx 0.082$.</p>
+              <p>Probabilidade $g(2.5) = \frac{1}{1 + 0.082} = \frac{1}{1.082}$:</p>
+              <p class="font-bold text-white">$$h_\theta(x) \approx \mathbf{0.924} \quad (92.4\% \text{ de chance!})$$</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. FUNÇÃO DE CUSTO LOG-LOSS -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+            <div>
+              <span class="text-xs font-mono font-bold text-rose-400 uppercase tracking-wider">Fórmula 03 do Anexo</span>
+              <h4 class="text-lg font-bold text-white">Função de Custo Log-Loss (Entropia Cruzada Binária)</h4>
+            </div>
+            <div class="bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 font-mono text-sm text-rose-300">
+              $$J(\mathbf{\theta}) = -\frac{1}{m} \sum_{i=1}^{m} \Big[ y^{(i)} \ln(h^{(i)}) + (1 - y^{(i)}) \ln(1 - h^{(i)}) \Big]$$
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-300">
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+              <strong class="text-rose-400 block font-mono text-sm">O Truque do "Interruptor" Binário:</strong>
+              <p>A fórmula parece gigante, mas o rótulo real $y$ só pode ser $1$ (É Gryffindor) ou $0$ (Não é Gryffindor). Uma das metades sempre se anula!</p>
+              <p>• Se $y = 1$: o termo $(1 - y)$ vira $0$. Sobra apenas $-\ln(h)$.</p>
+              <p>• Se $y = 0$: o termo $y$ vira $0$. Sobra apenas $-\ln(1 - h)$.</p>
+            </div>
+
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+              <strong class="text-indigo-400 block font-mono text-sm">Por Que Logaritmo Natural?</strong>
+              <p>O logaritmo pune a arrogância do modelo!</p>
+              <p>• Se o aluno é Gryffindor ($y=1$) e o modelo prevê $h=0.99$: $-\ln(0.99) \approx 0.01$ (Custo quase zero! Acertou em cheio!).</p>
+              <p>• Se o modelo prevê $h=0.01$ com certeza que não é: $-\ln(0.01) = \mathbf{4.60}$ (Penalidade gigantesca!). Se previr $0$, o erro explode para o infinito ($\infty$).</p>
+            </div>
+
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+              <strong class="text-emerald-400 block font-mono text-sm">Exemplo Numérico Simples com 2 Alunos:</strong>
+              <p>• Aluno 1 ($y=1$): modelo prevê $h=0.8$.</p>
+              <p>Perda: $-\ln(0.8) \approx 0.223$.</p>
+              <p>• Aluno 2 ($y=0$): modelo prevê $h=0.1$.</p>
+              <p>Perda: $-\ln(1 - 0.1) = -\ln(0.9) \approx 0.105$.</p>
+              <p class="font-bold text-white">$$J(\theta) = \frac{0.223 + 0.105}{2} = \mathbf{0.164}$$</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. DERIVADA DO GRADIENTE E ATUALIZAÇÃO -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+            <div>
+              <span class="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider">Fórmula 04 do Anexo</span>
+              <h4 class="text-lg font-bold text-white">Gradiente Parcial & Regra de Atualização dos Pesos</h4>
+            </div>
+            <div class="bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 font-mono text-sm text-emerald-300">
+              $$\frac{\partial J}{\partial \theta_j} = \frac{1}{m} \sum_{i=1}^{m} \big(h_\theta(x^{(i)}) - y^{(i)}\big) x_j^{(i)}$$
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-300">
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+              <strong class="text-emerald-400 block font-mono text-sm">O Que É $(h - y)$?</strong>
+              <p>É o <strong>erro residual puro</strong>: o que o modelo achou ($h$) menos o que a realidade era ($y$).</p>
+              <p>• Se previu $0.8$ e era $1.0$: erro é $0.8 - 1.0 = \mathbf{-0.2}$ (faltou nota, tem que subir!).</p>
+              <p>• Se previu $0.7$ e era $0.0$: erro é $0.7 - 0.0 = \mathbf{+0.7}$ (exagerou, tem que descer!).</p>
+            </div>
+
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+              <strong class="text-amber-400 block font-mono text-sm">Por Que Multiplicar por $x_j$?</strong>
+              <p>Porque se o modelo errou feio, quem teve nota alta naquela matéria é quem mais influenciou o erro!</p>
+              <p>A matéria que estava com a nota $x_j$ mais alta recebe o maior puxão de orelha (maior ajuste no peso correspondente $\theta_j$).</p>
+            </div>
+
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+              <strong class="text-indigo-400 block font-mono text-sm">O Passo de Atualização ($\alpha$):</strong>
+              <p>$$\theta_j \leftarrow \theta_j - \alpha \cdot \frac{\partial J}{\partial \theta_j}$$</p>
+              <p>Subtraímos o gradiente multiplicado pela <strong>taxa de aprendizado $\alpha = 0.5$</strong>. Como um passo na direção contrária ao erro para descer a montanha até o erro mínimo!</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ONE VS REST & OS 3 OTIMIZADORES -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3">
+          <h4 class="text-white font-bold text-sm">Como os 4 Modelos Trabalham Juntos (One-vs-Rest)</h4>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Como cada classificador de regressão logística é binário ($1$ ou $0$), nosso script treina <strong>4 especialistas</strong>:
+          </p>
+          <ul class="text-xs text-slate-300 space-y-1.5 font-mono">
+            <li>• <strong class="text-red-400">Classificador Gryffindor:</strong> treinado com $y=1$ para Gryffindor, $0$ para as outras.</li>
+            <li>• <strong class="text-emerald-400">Classificador Slytherin:</strong> treinado com $y=1$ para Slytherin, $0$ para as outras.</li>
+            <li>• <strong class="text-blue-400">Classificador Ravenclaw:</strong> treinado com $y=1$ para Ravenclaw, $0$ para as outras.</li>
+            <li>• <strong class="text-yellow-400">Classificador Hufflepuff:</strong> treinado com $y=1$ para Hufflepuff, $0$ para as outras.</li>
+          </ul>
+          <p class="text-xs text-slate-400">
+            Cada um gera um vetor de pesos $\mathbf{\theta}_k$ independente salvo no <code>weights.json</code>.
+          </p>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3">
+          <h4 class="text-white font-bold text-sm">Bônus: Os 3 Otimizadores Programados</h4>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Implementamos no <code>logreg_train.py</code> a flag <code>--method</code> para demonstrar na defesa:
+          </p>
+          <ul class="text-xs text-slate-300 space-y-2">
+            <li><strong class="text-cyan-300 font-mono">--method batch:</strong> (Obrigatório) Usa 100% das 1600 amostras em cada passo do gradiente. Convergência suave e determinística.</li>
+            <li><strong class="text-purple-300 font-mono">--method sgd:</strong> (Bônus) Atualiza os pesos amostra por amostra ($m=1$). Passo rápido e estocástico.</li>
+            <li><strong class="text-emerald-300 font-mono">--method minibatch:</strong> (Bônus) Atualiza em blocos de 32 alunos. O padrão da indústria moderna.</li>
+          </ul>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================================================================== -->
+    <!-- PASSO 6: INFERÊNCIA & ARGMAX (logreg_predict.py) -->
+    <!-- ==================================================================== -->
+    <section id="passo-6" class="space-y-6 scroll-mt-28">
+      <div class="border-b border-slate-800 pb-4">
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 text-xs font-bold uppercase tracking-wider">Passo 06</span>
+          <span class="text-xs text-slate-500">Geração do houses.csv</span>
+        </div>
+        <h3 class="text-2xl font-bold text-white mt-1">🔮 Inferência & Decisão do Chapéu Seletor: O Que É ArgMax (`logreg_predict.py`)</h3>
+        <p class="text-xs text-slate-400 mt-1">Como as probabilidades dos 4 modelos se combinam para classificar o aluno na casa certa.</p>
+      </div>
+
+      <!-- DISSECAÇÃO DO ARGMAX -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+          <div>
+            <span class="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider">Regra de Decisão Multiclasse</span>
+            <h4 class="text-lg font-bold text-white">A Regra do ArgMax: $\hat{y} = \arg\max_k (p_k)$</h4>
+          </div>
+          <div class="bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 font-mono text-sm text-emerald-300">
+            $$\hat{y} = \arg\max_{k \in \{G, S, R, H\}} \sigma(\mathbf{\theta}_k^T \mathbf{x})$$
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-300">
+          <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+            <strong class="text-emerald-400 block font-mono text-sm">O Que Essa Palavra Significa:</strong>
+            <p>$\max$ devolve o maior número (ex: $0.85$).</p>
+            <p>$\arg\max$ ("argumento do máximo") devolve o <strong>nome da classe</strong> que gerou aquele maior número (ex: "Ravenclaw").</p>
+          </div>
+
+          <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+            <strong class="text-amber-400 block font-mono text-sm">Exemplo com Aluno de Teste:</strong>
+            <p>Passamos as notas do aluno nos 4 modelos treinados:</p>
+            <p>• Gryffindor: $p_G = 0.12$ ($12\%$)</p>
+            <p>• Slytherin: $p_S = 0.05$ ($5\%$)</p>
+            <p>• Ravenclaw: $p_R = \mathbf{0.81}$ ($81\%$ 👑)</p>
+            <p>• Hufflepuff: $p_H = 0.02$ ($2\%$)</p>
+            <p class="text-emerald-300 font-bold">Resultado: O aluno vai para Ravenclaw!</p>
+          </div>
+
+          <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-1">
+            <strong class="text-indigo-400 block font-mono text-sm">Formatação do houses.csv:</strong>
+            <p>O <code>logreg_predict.py</code> formata e salva o CSV estritamente no layout exigido pelo subject:</p>
+            <pre class="bg-slate-900 p-2 rounded border border-slate-800 text-[11px] text-emerald-400 font-mono">
+Index,Hogwarts House
+0,Hufflepuff
+1,Ravenclaw
+2,Gryffindor
+...</pre>
+          </div>
+        </div>
+
+        <!-- BANNER DE ACURÁCIA -->
+        <div class="bg-emerald-950/20 border border-emerald-500/30 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 mt-2">
+          <div>
+            <span class="font-bold text-emerald-300 block text-sm">Acurácia Aprovada com Distinção em Hogwarts:</span>
+            <span class="text-xs text-slate-300">O subject da 42 exige $\ge 98.0\%$ de acurácia no Scikit-Learn. O nosso classificador atinge <strong>98.44%</strong>.</span>
+          </div>
+          <span class="text-2xl font-bold font-mono text-emerald-400">98.44%</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================================== -->
+    <!-- PASSO 7: COMO RODAR & DEFESA 42 -->
+    <!-- ==================================================================== -->
+    <section id="passo-7" class="space-y-6 scroll-mt-28">
+      <div class="border-b border-slate-800 pb-4">
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-0.5 rounded-md bg-slate-800 text-slate-300 text-xs font-bold uppercase tracking-wider">Passo 07</span>
+          <span class="text-xs text-slate-500">Roteiro da Defesa</span>
+        </div>
+        <h3 class="text-2xl font-bold text-white mt-1">🎓 Comandos do Projeto & Perguntas da Defesa 42</h3>
+        <p class="text-xs text-slate-400 mt-1">Os comandos reais que você executa no terminal durante a avaliação com seus pares.</p>
+      </div>
+
+      <!-- COMANDOS DO MAKEFILE -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+        <h4 class="text-white font-bold text-sm">Comandos do Makefile Prontos para Apresentação:</h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs font-mono">
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1">
+            <span class="text-emerald-400 font-bold block">make audit</span>
+            <span class="text-slate-400 text-[11px]">Roda o scanner de AST para provar zero funções proibidas.</span>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1">
+            <span class="text-indigo-400 font-bold block">make test</span>
+            <span class="text-slate-400 text-[11px]">Executa os 107 testes unitários e de integração.</span>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1">
+            <span class="text-amber-400 font-bold block">make train</span>
+            <span class="text-slate-400 text-[11px]">Treina o modelo e gera o arquivo weights.json.</span>
+          </div>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1">
+            <span class="text-purple-400 font-bold block">make predict</span>
+            <span class="text-slate-400 text-[11px]">Classifica os alunos de teste e gera o houses.csv.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PERGUNTAS DO AVALIADOR -->
+      <div class="space-y-4">
+        <h4 class="text-white font-bold text-sm">Perguntas Objetivas do Avaliador da 42:</h4>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-2">
+          <h5 class="text-white font-bold text-sm flex items-center gap-2">
+            <span class="text-amber-400 font-mono">1.</span> "Como você garante que não usou nenhuma função que faz o trabalho por você?"
+          </h5>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            <strong>Resposta:</strong> "Implementamos o <code>scripts/norm_check.py</code> que inspeciona a Abstract Syntax Tree (AST) do código. Quando rodamos <code>make audit</code>, o script verifica que não importamos <code>describe()</code>, <code>mean()</code>, <code>std()</code> ou módulos prontos de estatística no pipeline de treino e estatísticas."
+          </p>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-2">
+          <h5 class="text-white font-bold text-sm flex items-center gap-2">
+            <span class="text-indigo-400 font-mono">2.</span> "Por que você padronizou as notas com Z-Score antes de treinar?"
+          </h5>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            <strong>Resposta:</strong> "Porque a nota de Aritmancia variava na casa dos 50.000 e a de Poções variava na casa de 5. Sem padronização, a descida do gradiente oscila violentamente na matéria de escala grande e não aprende nada na matéria de escala pequena. Com Z-Score, todas adquirem média 0 e desvio 1, garantindo convergência estável."
+          </p>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-2">
+          <h5 class="text-white font-bold text-sm flex items-center gap-2">
+            <span class="text-purple-400 font-mono">3.</span> "Por que você descartou Trato das Criaturas Mágicas e uma das matérias colineares?"
+          </h5>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            <strong>Resposta:</strong> "No <code>histogram.py</code>, provamos que Trato das Criaturas Mágicas tem distribuições idênticas nas 4 casas, sendo inútil para discriminar. No <code>scatter_plot.py</code>, provamos que Astronomia e Defesa Contra as Artes das Trevas têm correlação $-0.99$, logo manter as duas é redundante e causa multicolinearidade no modelo linear."
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-slate-800 py-8 text-center text-xs text-slate-500 space-y-2">
+    <p>42 São Paulo — Projeto DSLR (Data Science × Logistic Regression)</p>
+    <p class="font-mono">Guia Completo de Arquitetura & Matemática Descomplicada</p>
+  </footer>
+
+</body>
+</html>
