@@ -320,7 +320,8 @@ def main() -> int:
             current_branch, base_branch=args.base
         )
         title = args.title or default_title
-        body = args.body or default_body
+        raw_body = args.body or default_body
+        body = raw_body.replace("&#10;", "\n").replace("\\n", "\n")
 
         url = create_pull_request(
             title=title,
