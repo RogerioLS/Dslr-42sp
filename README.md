@@ -11,8 +11,6 @@
         <img src="https://img.shields.io/badge/Target_Precision-Accuracy_%E2%89%A5_98%25-success?style=flat" alt="Precision"/>
         <img src="https://img.shields.io/badge/Tests-103_Passed-success?style=flat&logo=pytest&logoColor=white" alt="Tests"/>
         <img src="https://img.shields.io/badge/License-MIT-purple?style=flat" alt="License"/>
-      </p>
-      <p align="center">
         <a href="https://rogeriols.github.io/Dslr-42sp/interactive_journey.html" target="_blank">
           <img src="https://img.shields.io/badge/Interactive_Journey-GitHub_Pages-0969da?style=flat&logo=githubpages&logoColor=white" alt="GitHub Pages Masterclass"/>
         </a>
